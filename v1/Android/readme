@@ -1,0 +1,15 @@
+ihr müsst in eclipse das repo von actionbarsherlock auschecken
+
+https://github.com/JakeWharton/ActionBarSherlock.git
+
+und als neues projekt hinzufügen (verzeichnis "actionbarsherlock"). 
+Unter properties -> "Android" -> "Library" den haken "is library" setzen.
+
+Danach die properties von BottleMail öffnen -> "Android"
+unter "Library" -> "Add..." -> ActionBarSherlock Project auswählen.
+
+Absofort läuft BottleMail auch ab 2.2.
+
+NEUE LIBRARY CARDSUI EINBINDEN!
+
+https://github.com/nadavfima/cardsui-for-android

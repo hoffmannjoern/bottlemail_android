@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BootleMailBT</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">BTMBT Tester</string>
+    <string name="btnStringClose">Exit</string>
+
+</resources>

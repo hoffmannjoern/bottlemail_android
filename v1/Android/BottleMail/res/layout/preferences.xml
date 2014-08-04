@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <PreferenceCategory 
+        android:title="@string/prefs_connectionCategory"
+        android:key="categoryConnection" >
+        
+        <CheckBoxPreference 
+            android:key="bluetoothSwitch"
+            android:title="@string/prefs_bluetoothTitle" 
+            android:summary="@string/prefs_bluetoothSummary"
+            android:defaultValue="false" />        
+        
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:title="@string/prefs_generalCategory"
+        android:key="categoryGeneral" >
+        
+        <EditTextPreference
+            android:key="author"
+            android:title="@string/prefs_authorNicknameTitle"
+            android:summary="@string/prefs_authorNicknameSummary"
+            android:dialogTitle="@string/prefs_setAuthorDialogTitle"
+            android:dialogMessage="@string/prefs_authorNicknameSummary"   
+            android:defaultValue="Anonymous" />
+        
+    </PreferenceCategory>
+    
+</PreferenceScreen>

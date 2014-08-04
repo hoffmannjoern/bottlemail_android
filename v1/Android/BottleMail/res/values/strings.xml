@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" >BottleMail</string>
+    <string name="action_settings" >Einstellungen</string>
+    <string name="title_section1" >In der Nähe</string>
+    <string name="title_section2" >Flaschenregal</string>
+    <string name="action_compose_message">Neue Nachricht</string>
+    <string name="action_send_message">Nachricht senden</string>
+    <string name="action_title_prefs">Einstellungen</string>
+    <string name="action_subtitle_prefs">Einstellungen vornehmen</string>
+
+    <!-- TOASTS -->
+    <string name="toast_activeBluetooth">Bluetooth aktiviert (Dummy Text)</string>
+    <string name="action_title_dummy_bottle">Flasche X</string>
+    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
+    <string name="toast_noBluetooth">Bluetooth ist leider nicht verfügbar! ByeBye!</string>
+
+    <!-- NOWLAYOUT -->
+    <string name="dummy_text">Flaschenpost ahoi!</string>
+    <string name="title_activity_main">Now Layout</string>
+    
+    <!-- Preferences -->
+    <string name="prefs_connectionCategory">Verbindungen</string>
+    <string name="prefs_bluetoothTitle">Bluetooth (Dummyeintrag)</string>
+    <string name="prefs_bluetoothSummary">Ein-/Ausschalten von Bluetooth</string>
+    <string name="prefs_generalCategory">Nachrichten</string>
+    <string name="prefs_authorNicknameTitle">Nickname</string>
+    <string name="prefs_authorNicknameSummary">Setze deinen Nickname, welcher beim Versenden der Nachricht automatisch gesetzt wird.</string>
+    <string name="prefs_setAuthorDialogTitle">Nickname</string>
+
+</resources>
