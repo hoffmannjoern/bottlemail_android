@@ -6,9 +6,21 @@
     <string name="action_settings">Settings</string>
     <string name="title_section1">In der Nähe</string>
     <string name="title_section2">Flaschenregal</string>
+    
+    <!-- Bluetooth failure messages  -->
     <string name="toast_activeBluetooth">Bluetooth aktiviert (Dummy Text)</string>
+    <string name="toast_bluetooth_not_supported">Bluetooth is not supported!</string>
+    <string name="toast_ble_not_supported">BLE is not supported!</string>
+    <string name="toast_bluetooth_not_enabled">Bluetooth is not enabled!</string>
+    <string name="toast_scanning_ble">Scanning&#8230;</string>
     
     <string name="title_activity_bottle_details">BottleDetails</string>
-    
-
+    <string name="alert_btn_okay">Okay</string>
+    <string name="alert_btn_accept">Akzeptieren</string>
+    <string name="alert_btn_close">Schließen</string>
+    <string name="alert_title_no_internet_conn">Kein Internetzugang</string>
+    <string name="alert_body_no_internet_conn">Du bist nicht mit dem 
+        Internet verbunden. Möchtest du es jetzt aktivieren?</string>
+    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
+   
 </resources>

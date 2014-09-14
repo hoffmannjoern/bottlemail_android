@@ -1,4 +1,4 @@
-package uni.leipzig.data;
+package uni.leipzig.bm2.data;
 
 import android.util.SparseArray;
 

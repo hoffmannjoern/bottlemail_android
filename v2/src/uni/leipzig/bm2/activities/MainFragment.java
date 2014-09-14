@@ -1,14 +1,14 @@
-package uni.leipzig.bottlemail2;
+package uni.leipzig.bm2.activities;
 
 import java.util.ArrayList;
 
-import uni.leipzig.bluetoothLE.BleHandler;
-import uni.leipzig.data.Bottle;
-import uni.leipzig.data.BottleRack;
-
-import android.app.Fragment;
+import uni.leipzig.bm2.data.Bottle;
+import uni.leipzig.bm2.data.BottleRack;
+import uni.leipzig.bottlemail2.R;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-/**
- * Created by Clemens on 23.05.13.
- */
+
 public class MainFragment extends Fragment {
 
 	//TODO just copied from Version1, added only needed stuff
@@ -33,12 +31,12 @@ public class MainFragment extends Fragment {
 	 */
 	public static final String ARG_SECTION_NUMBER = "section_number";
 	public static final String ARG_SECTION_TITLE = "section_title";
-
-//	private WebserviceHandler mWebserviceHandler;
 	
-	private BleHandler mBleHandler;
-	//private BluetoothHandler mBluetoothHandler;
-
+	public static final String SHOW_BOTTLE_DETAILS = 
+			"uni.leipzig.bm2.activities.SHOW_BOTTLE_DETAILS";
+	
+	//private WebserviceHandler mWebserviceHandler;
+	
 	private ArrayList<Bottle> mBottleValues = new ArrayList<Bottle>();
 	private ArrayAdapter<Bottle> mBottleAdapter;
 
@@ -54,11 +52,6 @@ public class MainFragment extends Fragment {
 		setHasOptionsMenu(true);
 		
 		Log.e(TAG,"+++ OnCreate +++");
-		
-		//mBluetoothHandler = BluetoothHandler.getInstance();
-		mBleHandler = BleHandler.getInstance();
-		
-		
 	}
 	
 	@Override
@@ -76,16 +69,22 @@ public class MainFragment extends Fragment {
 	    mBottleAdapter = new ArrayAdapter<Bottle>(getActivity(), 
 	    		android.R.layout.simple_list_item_1, mBottleValues);
 
-//	    TODO
 		listview.setAdapter(mBottleAdapter);
 		
 		Log.d("ARG_SECTION_NUMBER", Integer.toString(getArguments().
 				getInt(MainFragment.ARG_SECTION_NUMBER)));
 		
 		if(getArguments().getInt(MainFragment.ARG_SECTION_NUMBER) == 1) {
-			startDiscoveringBottles();
+			//TODO listNearBottles, discovering starts onResume of MainActivity
+			// found devices should get catched in LeScanCallback and
+			// will get here through arguments intent of MainAct. to this
+			BluetoothDevice bleDevice = getArguments().
+					getParcelable("BLUETOOTH_DEVICE_FOUND");
+			checkBluetoothDeviceAndAddIfBottle(bleDevice);
 		} else {
-			addBottle(testCreateBottle(1));
+			//listKnownBottles
+			addBottle(testCreateBottle(0));
+			
 		}
 	
 		listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -93,13 +92,11 @@ public class MainFragment extends Fragment {
 			public void onItemClick(AdapterView<?> adapterView, View view,
 					int i, long l) {
 				
-				cancelDiscoveringBottles();
-	
 				Bottle bottle = (Bottle)listview.getItemAtPosition(i);
 				// aus string zweite zeile in Integer wandeln           	
 				Intent intent = new Intent(getActivity(), BottleDetails.class);
 				Bundle bundle = new Bundle();
-				bundle.putParcelable("bottle", bottle);
+				bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);
 				
 				intent.putExtras(bundle);
 	
@@ -110,43 +107,25 @@ public class MainFragment extends Fragment {
 		return rootView;
 	}
 	
-	public void startDiscoveringBottles() {
-		
-//		try {
-//			BottleReceiver br = new BottleReceiver(this);
-//		
-//			// Register the BroadcastReceiver
-//			IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-//			getActivity().registerReceiver(br, filter);
-//			
-//			Toast.makeText(this.getActivity(), "Suche nach Flaschen", Toast.LENGTH_SHORT).show();
-//			
-//			mBtHandler.startDiscovery();
-//		
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+//	int mCount = 2;
 	
-	}
-
-	public void cancelDiscoveringBottles(){
-//		if(mBtHandler != null)
-//			mBtHandler.cancelDiscovery();
-	}
-	
-	private Bottle testCreateBottle(int bottleID){
+	void checkBluetoothDeviceAndAddIfBottle(BluetoothDevice bluetoothDevice){
 		
-		Bottle bottle = new Bottle(bottleID, "Flasche " + bottleID);
-		BottleRack.getInstance().addBottleToRack(bottle);
-		return bottle;
-	}
-	
-	private Bottle testCreateBottle(int bottleID, String name){
-		
-		Bottle bottle = new Bottle(bottleID, name);
-		BottleRack.getInstance().addBottleToRack(bottle);
-		return bottle;
+		if (bluetoothDevice != null) {
+			Log.d("checkBluetoothDevice", bluetoothDevice.getAddress());
+			
+			//TODO: test if device is a bottle; push the right bottle number
+			Bottle bottle = createBottleFromDevice(bluetoothDevice.getName());
+	//		Bottle bottle = createBottleFromDevice(
+	//				position, bluetoothDevice.getName());
+			
+			bottle.setMac(bluetoothDevice.getAddress());
+			
+			addBottle(bottle);
+	//		mCount++;
+		} else {
+			Log.w(TAG, "checkBluetoothDevice got null device");
+		}
 	}
 
 	public void addBottle(Bottle bottle) {
@@ -156,38 +135,31 @@ public class MainFragment extends Fragment {
 		mBottleValues.add(bottle);
 		mBottleAdapter.notifyDataSetChanged();
 	}
-	
-	int mCount = 2;
-	
-//	void checkBluetoothDevice(BluetoothDevice bluetoothDevice){
-//		
-//		Log.d("checkBluetoothDevice", bluetoothDevice.getAddress());
-//		
-//		//TODO: �berpr�fen, ob Device eine Flasche ist
-//		Bottle bottle = testCreateBottle(mCount, bluetoothDevice.getName());
-//		
-//		bottle.setMac(bluetoothDevice.getAddress());
-//		
-//		addBottle(bottle);
-//		mCount++;
-//	}
 
-//	@Override
-//	public void onDestroy() {
-//		mBtHandler.cancelDiscovery();
-//		super.onDestroy();
-//	}
-//	
+	private Bottle createBottleFromDevice(String name){
+		
+		Bottle bottle = new Bottle(mBottleAdapter.getCount()+1, name);
+		bottleRack.addBottleToRack(bottle);
+		return bottle;
+	}
+
+	private Bottle testCreateBottle(int bottleID){
+		
+		Bottle bottle = new Bottle(bottleID, "Flasche " + bottleID);
+		bottleRack.addBottleToRack(bottle);
+		return bottle;
+	}
+
 //	public void UpdateBottle(Bottle bottle)
 //	{
 //	    InsertUpdateBottle(bottle, false);
 //	}
-//	
+	
 //	public void InsertBottle(Bottle bottle)
 //	{
 //	    InsertUpdateBottle(bottle, true);
 //	}
-//	
+	
 //	private void InsertUpdateBottle(Bottle bottle, boolean insert)
 //	{
 //	    ContentValues values = new ContentValues();
@@ -206,8 +178,8 @@ public class MainFragment extends Fragment {
 //	        getActivity().getContentResolver().update(Uri.parse(BottlEMailContentProvider.CONTENT_URI + "/BOTTLEID/" + bottle.getBottleID()), values, null, null);
 //	    
 //	}
-//	
-//	
+	
+	
 //	public SparseArray<Bottle> getFoundBottles()
 //	{
 //	    Uri uri = Uri.parse(BottlEMailContentProvider.CONTENT_URI + "/BOTTLES/FOUND");

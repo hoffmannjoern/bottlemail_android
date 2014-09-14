@@ -1,63 +1,49 @@
-package uni.leipzig.bluetoothLE;
+package uni.leipzig.bm2.bluetoothLE;
 
-import android.bluetooth.BluetoothAdapter;
-import android.util.Log;
 
 public class BleHandler {
 
 	//TODO just copied from Version1, added only needed stuff to compile
 	
 	// debugging
-	private static final String TAG = "BtHandler";
+	private static final String TAG = "BleHandler";
 
 //	private BtConnectionTask mBtCurentConnection;
-
-	private static BleHandler mBleHandler = new BleHandler();
-	private BluetoothAdapter mBleAdapter;		
-
-	private BleHandler(){
-			
-		Log.e( TAG, "+++++ construct BtHandler +++++");
-		mBleAdapter = BluetoothAdapter.getDefaultAdapter();
-		
-		if (mBleAdapter == null) {
-		    // Device does not support Bluetooth
-			Log.e( TAG, "The device doesn't support Bluetooth!");	
-			return;
-		}
-		if (!mBleAdapter.isEnabled()){
-			//Bluetooth aktivieren
-			Log.e( TAG, "Bluetooth is not activated");	
-			return;
-		}	
-	}
-	
-	
-	public static BleHandler getInstance() {
-		
-		Log.d( TAG, "+++ getInstance +++");
-		return mBleHandler;
-	}
-	
-	//scanning for devices
-	public void startDiscovery() throws Exception {
-		
-		if (mBleAdapter.isEnabled()) {
-			mBleAdapter.startDiscovery();
-		}
-		else{
-			throw new Exception();
-		}
-	}
-	
-	//stop scanning for devices
-	public void cancelDiscovery(){
-		
-		if(mBleAdapter != null){
-			if(mBleAdapter.isDiscovering())
-				mBleAdapter.cancelDiscovery();
-		}
-	}
+//
+//	private static BleHandler mBleHandler = new BleHandler();
+//	private BluetoothAdapter mBleAdapter;	
+//	private BleHandler(){
+//	
+//		Log.e( TAG, "+++++ construct BtHandler +++++");
+//		mBleAdapter = BluetoothAdapter.getDefaultAdapter();	
+//	}
+//	
+//	
+//	public static BleHandler getInstance() {
+//		
+//		Log.d( TAG, "+++ getInstance +++");
+//		return mBleHandler;
+//	}
+//
+//	//scanning for devices
+//	public void startDiscovery() throws Exception {
+//		
+//		if (mBleAdapter.isEnabled()) {
+//			mBleAdapter.startDiscovery();
+//		}
+//		else{
+//			throw new Exception();
+//		}
+//	}
+//	
+//	//stop scanning for devices
+//	public void cancelDiscovery(){
+//		
+//		if(mBleAdapter != null){
+//			if(mBleAdapter.isDiscovering())
+//				mBleAdapter.cancelDiscovery();
+//		}
+//	}
 	
 	
 //	//holt ID der Flasche

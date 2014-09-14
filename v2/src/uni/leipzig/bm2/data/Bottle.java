@@ -1,4 +1,4 @@
-package uni.leipzig.data;
+package uni.leipzig.bm2.data;
 
 import java.util.Calendar;
 import android.os.Parcel;
