@@ -1,9 +1,12 @@
 package uni.leipzig.bm2.data;
 
+import java.util.ArrayList;
+
+
 import android.util.SparseArray;
 
 public class BottleRack {
-
+	
 	//TODO just copied from Version1, no changes
 	
 	private static BottleRack bottleRack = new BottleRack();
@@ -12,16 +15,22 @@ public class BottleRack {
 	private String[] registeredBottles;
 	
 	private SparseArray<Bottle> bottles;
+	private ArrayList<Bottle> arrayOfBottles;
 
 	private BottleRack(){
 		
 		//this.bottles = new HashMap<String,Bottle>();
 		this.bottles = new SparseArray<Bottle>();
+		this.arrayOfBottles = new ArrayList<Bottle>();
 	}
 
 	public static BottleRack getInstance(){
 		
 		return bottleRack ;	
+	}
+	
+	public int getNumberOfBottles() {
+		return bottles.size();
 	}
 	
 	// returns a certain bottle from the rack
@@ -40,18 +49,32 @@ public class BottleRack {
 		return bottles;
 	}
 
+	public boolean bottleIsKnown (String mac) {
+		for (int i = 0; i < arrayOfBottles.size(); i++) {
+			if (arrayOfBottles.get(i).getMac().equals(mac) == true)
+				return true;
+		}
+		return false;
+	}
+	
 	//check, if a certain bottle is in the rack
 	public boolean bottleExists(int btlID){
 		
 		return (bottles.indexOfKey(btlID)>=0);		
 	}
 	
-	public void addBottleToRack(Bottle btl){
-		/*
-		 * Hier sollte geprueft werden, ob die Flasche schon vorhanden ist oder nicht,
-		 * wenn ja sollte eine Exception geworfen werden 
-		 */
-		this.bottles.append(btl.getBottleID(), btl);		
+	public boolean addBottleToRack(Bottle btl){
+		// is bottle already known
+		if( !bottleIsKnown(btl.getMac()) ) {
+			this.arrayOfBottles.add(btl);
+			this.bottles.append(btl.getBottleID(), btl);
+			return true;
+		}
+		return false;
+	}
+	
+	public ArrayList<Bottle> getArrayListOfBottles () {
+		return arrayOfBottles;
 	}
 	
 	//TODO: neue Flasche erzeugen

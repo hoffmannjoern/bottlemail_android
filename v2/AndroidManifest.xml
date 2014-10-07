@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="16"
         android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -16,7 +16,7 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="false" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -34,10 +34,20 @@
         <activity
             android:name="uni.leipzig.bm2.activities.BottleDetails"
             android:label="@string/title_activity_bottle_details"
-            android:parentActivityName="uni.leipzig.bm2.activities.MainActivity"  >
+            android:parentActivityName="uni.leipzig.bm2.activities.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="uni.leipzig.bm2.activities.MainActivity" />
+        </activity>
+        <activity android:name="uni.leipzig.bm2.activities.DeviceControlActivity" />
+
+        <service
+            android:name="uni.leipzig.bm2.ble.BluetoothLeService"
+            android:enabled="true" />
+
+        <activity
+            android:name=".MainTabActivity"
+            android:label="@string/title_activity_main_tab" >
         </activity>
     </application>
 

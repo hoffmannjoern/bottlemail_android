@@ -1,26 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">BottlEmail2</string>
+    <!-- MainActivity strings -->
+    <string name="app_name">BottlEmail 2.0</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <!-- tab names -->
     <string name="title_section1">In der Nähe</string>
     <string name="title_section2">Flaschenregal</string>
-    
-    <!-- Bluetooth failure messages  -->
+    <string name="unknown_device">Unknown device</string>
+
+    <!-- Bluetooth messages -->
     <string name="toast_activeBluetooth">Bluetooth aktiviert (Dummy Text)</string>
     <string name="toast_bluetooth_not_supported">Bluetooth is not supported!</string>
     <string name="toast_ble_not_supported">BLE is not supported!</string>
     <string name="toast_bluetooth_not_enabled">Bluetooth is not enabled!</string>
     <string name="toast_scanning_ble">Scanning&#8230;</string>
-    
+
+    <!-- BottleDetails strings -->
     <string name="title_activity_bottle_details">BottleDetails</string>
-    <string name="alert_btn_okay">Okay</string>
-    <string name="alert_btn_accept">Akzeptieren</string>
-    <string name="alert_btn_close">Schließen</string>
+    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
+    <string name="tv_bottleid">Flaschennumer: </string>
+    <string name="tv_bottleid_value">0</string>
+    <string name="tv_mac">Flaschen-Mac: </string>
+    <string name="tv_mac_value">ca:fe:ca:fe</string>
+    <string name="tv_delete_timestamp">Nachricht gelöscht</string>
+    <string name="btn_show_message">Zeige Nachricht</string>
+    <string name="btn_send_message">Sende</string>
+    <string name="btn_show_map">Karte</string>
     <string name="alert_title_no_internet_conn">Kein Internetzugang</string>
     <string name="alert_body_no_internet_conn">Du bist nicht mit dem 
         Internet verbunden. Möchtest du es jetzt aktivieren?</string>
-    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
-   
+    <string name="gatt_state">State: </string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="no_data">No data</string>
+    <string name="unknown_characteristic">Unknown characteristic</string>
+    <string name="unknown_service">Unknown service</string>
+
+    <!-- Menu items -->
+    <string name="menu_connect">Connect</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="menu_scan">Scan</string>
+    <string name="menu_stop">Stop</string>
+
+    <!-- Alert Dialog -->
+    <string name="alert_btn_okay">Okay</string>
+    <string name="alert_btn_accept">Akzeptieren</string>
+    <string name="alert_btn_close">Schließen</string>
+    <string name="title_activity_device_details">DeviceDetails</string>
+    <string name="title_activity_main_tab">MainTabActivity</string>
+
 </resources>

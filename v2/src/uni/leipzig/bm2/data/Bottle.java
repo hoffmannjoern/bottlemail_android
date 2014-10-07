@@ -19,9 +19,18 @@ public class Bottle implements Parcelable{
 	private String protocolVersionMajor;
 	private String protocolVersionMinor;
 	private String mac;
+	private String geolocation;
+	private int color;
 
 	//wird bei erster ueberpruefung auf geloeschte Nachrichten gesetzt
 	private Calendar delTimestamp = null;
+
+	public Bottle(int id, String name, String mac){
+		
+		this.bottleID = id;
+		this.bottleName = name;		
+		this.mac = mac;
+	}
 	
 	public Bottle(int id, String name){
 		
@@ -129,6 +138,22 @@ public class Bottle implements Parcelable{
 
 	public void setMac(String mac) {
 		this.mac = mac;
+	}
+	
+	public String getGeoLocation() {
+		return geolocation;
+	}
+	
+	public void setGeoLocation(String geolocation) {
+		this.geolocation = geolocation;
+	}
+	
+	public int getColor() {
+		return color;
+	}
+	
+	public void setColor(int resourceID){
+		this.color = resourceID;
 	}
 
 	@Override

@@ -1,9 +1,13 @@
 package uni.leipzig.bm2.activities;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.GregorianCalendar;
 
-import uni.leipzig.bm2.bluetoothLE.LeDeviceListAdapter;
+import uni.leipzig.bm2.data.Bottle;
+import uni.leipzig.bm2.data.BottleRack;
 import uni.leipzig.bottlemail2.R;
+import android.app.Activity;
+import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -13,102 +17,68 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBar.TabListener;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class MainActivity extends ActionBarActivity implements TabListener {
+public class MainActivity extends ListActivity {//extends ActionBarActivity implements TabListener {
 	
 	private static final boolean DEBUG = true;
 	
     private final static String TAG = "MainActivity";
     
-	private SectionsPagerAdapter mSectionsPagerAdapter;
-	private ViewPager mViewPager;
+//	private SectionsPagerAdapter mSectionsPagerAdapter;
+//	private ViewPager mViewPager;
 
-	private static final int REQUEST_ENABLE_BT = 666;
-	private static final String BLUETOOTH_DEVICE_FOUND = 
-			"uni.leipzig.bm2.activities.BLUETOOTH_DEVICE_FOUND";
-	
+//	private static final String BLUETOOTH_DEVICE_FOUND = 
+//			"uni.leipzig.bm2.activities.BLUETOOTH_DEVICE_FOUND";
+
+    //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory
+    // - Tutorial for android security has an example for hashing with non-readable passphrase (or sth. like this)
+    // - Watch for saving files / logging of bottles, for example in xml-file
+    private static BottleRack mBottleRack = BottleRack.getInstance();
+    
 	private static BluetoothAdapter mBluetoothAdapter;
 	private static boolean mScanning;
 	private static Handler mHandler;
+
+	private static final int REQUEST_ENABLE_BT = 666;
 	
-	private static LeDeviceListAdapter mLeDeviceListAdapter;
-
-
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
 
-
+    
+	private static ScannedBottlesListAdapter mScannedBottlesListAdapter;
+	
+	public static final String SHOW_BOTTLE_DETAILS = 
+			"uni.leipzig.bm2.activities.SHOW_BOTTLE_DETAILS";
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-
+		
 		if(DEBUG) Log.e(TAG, "+++ onCreate +++");
-		
-		//usePlaceholderFragments(savedInstanceState);
-		
-        setUpActionBarWithTabs();
+		getActionBar().setTitle(R.string.app_name);
+
+//		setContentView(R.layout.activity_main);
+//        setUpActionBarWithTabs();
         
         initializeBluetoothAdapter();
  		testBluetoothSupportOfDevice();
  		scanLeDevice(true);
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		if(DEBUG) Log.e(TAG, "+++ onResume +++");
-		
- 		scanLeDevice(true);
-	}
-	
-	@Override
-	protected void onStart(){
-		super.onStart();
-
-		if(DEBUG) Log.e(TAG, "+++ onStart +++");
-		
-		if ( !mBluetoothAdapter.isEnabled() ) {
-			// Bluetooth is not enabled
-			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
-					Toast.LENGTH_SHORT).show();
-			Intent enableBtIntent = new Intent(
-					BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-		}
-	}
-	
-	@Override
-	protected void onStop(){
-		super.onStop();
-
-		if(DEBUG) Log.e(TAG, "+++ onStop +++");
-		
-		//TODO: Shut down bluetooth or go to sleep, 
-		// when leaving the app... if possible and useful
-	}
-
 	private void initializeBluetoothAdapter () {
-
 		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapter +++");
 		
         mHandler = new Handler();
@@ -126,7 +96,6 @@ public class MainActivity extends ActionBarActivity implements TabListener {
 	}
 	
 	private void testBluetoothSupportOfDevice () {
-
 		if(DEBUG) Log.e(TAG, "+++ testBluetoothSupportOfDevice +++");
 		
 		if(mBluetoothAdapter == null) {
@@ -145,6 +114,99 @@ public class MainActivity extends ActionBarActivity implements TabListener {
 		} 
 	}
 	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if(DEBUG) Log.e(TAG, "+++ onResume +++");
+		
+        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
+        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        if (!mBluetoothAdapter.isEnabled()) {
+			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
+					Toast.LENGTH_SHORT).show();
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+        // Initializes list view adapter.
+        mScannedBottlesListAdapter = new ScannedBottlesListAdapter();
+        setListAdapter(mScannedBottlesListAdapter);
+        scanLeDevice(true);
+	}
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(DEBUG) Log.e(TAG, "+++ onActivityResult +++");
+        // User chose not to enable Bluetooth.
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+            finish();
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+/*	@Override
+	protected void onStart(){
+		super.onStart();
+		if(DEBUG) Log.e(TAG, "+++ onStart +++");
+		
+		if ( !mBluetoothAdapter.isEnabled() ) {
+			// Bluetooth is not enabled
+			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
+					Toast.LENGTH_SHORT).show();
+			Intent enableBtIntent = new Intent(
+					BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+		}
+	}*/
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+		if(DEBUG) Log.e(TAG, "+++ onPause +++");
+		
+        scanLeDevice(false);
+        mScannedBottlesListAdapter.clear();
+    }
+
+/*	@Override
+	protected void onStop(){
+		super.onStop();
+		if(DEBUG) Log.e(TAG, "+++ onStop +++");
+		
+		//TODO: Shut down bluetooth or go to sleep, 
+		// when leaving the app... if possible and useful
+	}*/
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        final Bottle bottle = mScannedBottlesListAdapter.getBottle(position);
+        if (bottle == null) return;
+        
+        //TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
+        if( (mBottleRack.addBottleToRack(bottle)) == true) {
+        	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
+        } else {
+        	if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
+        }        
+        
+//        final Intent intent = new Intent(this, DeviceControlActivity.class);
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, bottle.getBottleName());
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, bottle.getMac());
+		
+		// aus string zweite zeile in Integer wandeln           	
+		Intent intent = new Intent(this, BottleDetails.class);
+		Bundle bundle = new Bundle();
+		bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);		
+		intent.putExtras(bundle);
+
+        if (mScanning) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mScanning = false;
+        }
+        startActivity(intent);
+    }
+
     private void scanLeDevice(final boolean enable) {
 
 		if(DEBUG) Log.e(TAG, "+++ scanLeDevice +++");
@@ -183,20 +245,123 @@ public class MainActivity extends ActionBarActivity implements TabListener {
         		
            			//TODO what works? what is better?
            			//send to external data structure 
-//           			mLeDeviceListAdapter.addDevice(device);
-//           			mLeDeviceListAdapter.notifyDataSetChanged();
-           			
-           			//send to MainFragment to use in ListView
-           			Bundle deviceBundle = new Bundle();
-           			deviceBundle.putParcelable(BLUETOOTH_DEVICE_FOUND, device);
-           			MainFragment mainFragment = new MainFragment();
-           			mainFragment.setArguments(deviceBundle);
+           			mScannedBottlesListAdapter.addDeviceToScannedListIfIsBottle(device);
+           			mScannedBottlesListAdapter.notifyDataSetChanged();
                }
            });
        }
     };
 	
-	private void setUpActionBarWithTabs(){
+    // Adapter for holding devices found through scanning.
+    private class ScannedBottlesListAdapter extends BaseAdapter {
+        private final static String TAG = "BottleListAdapter";
+        
+        private ArrayList<Bottle> mScannedBottles;
+        private LayoutInflater mInflator;
+
+        public ScannedBottlesListAdapter() {
+            super();
+    		if(DEBUG) Log.e(TAG, "+++ BottleListAdapter +++");
+    		
+            mScannedBottles = new ArrayList<Bottle>();
+            mInflator = MainActivity.this.getLayoutInflater();
+        }
+
+        /**
+         * Adds a bluetooth device in the list, if it is not already in it.
+         * @param device the bluetooth device to be possibly added
+         * @return 1 if added, -1 if failed data, 0 if already in list
+         */
+        public int addDeviceToScannedListIfIsBottle(BluetoothDevice device) {
+        	if (device != null) {
+        		
+        		for (int i = 0; i < mScannedBottles.size(); i++) {
+        			if (mScannedBottles.get(i).getMac().equals(device.getAddress())){
+            			Log.e(TAG, "Device already in list!");
+        				return 0;
+        			}
+        		}
+        		if(DEBUG) Log.d("checkBluetoothDevice", "Add device: " + device.getAddress());
+    			
+    			//TODO: test if device is a bottle; push the right bottle number
+    			// find out: kind of bottle
+    			if ( device.getName() != null) {
+    				//TODO: Set further information about bottle here
+    				// - actual GPS information, if given free
+    				// - get id from webservice or use mac to identify definetly
+    				Bottle bottle = new Bottle(
+    						mScannedBottles.size()+1, device.getName(), device.getAddress());
+                    mScannedBottles.add(bottle);
+                    return 1;
+    			} else {
+    				Log.w(TAG, "getName method of bluetooth device returned null");
+    			}
+            } else {
+    			Log.w(TAG, "checkBluetoothDevice got null device");
+    		}
+    		return -1;
+        }
+
+        public Bottle getBottle(int position) {
+            return mScannedBottles.get(position);
+        }
+
+        public void clear() {
+            mScannedBottles.clear();
+        }
+        
+        @Override
+        public int getCount() {
+            return mScannedBottles.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return mScannedBottles.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            ViewHolder viewHolder;
+            // General ListView optimization code.
+            if (view == null) {
+                view = mInflator.inflate(R.layout.listitem_bottle, null);
+                viewHolder = new ViewHolder();
+                viewHolder.bottleAddress = (TextView) view.findViewById(R.id.bottle_address);
+                viewHolder.bottleName = (TextView) view.findViewById(R.id.bottle_name);
+                view.setTag(viewHolder);  
+            } else {
+                viewHolder = (ViewHolder) view.getTag();
+            }
+
+            Bottle bottle = mScannedBottles.get(i);
+            final String bottleName = bottle.getBottleName();
+            if (bottleName != null && bottleName.length() > 0) {
+                viewHolder.bottleName.setText(bottleName);
+            } else {
+                viewHolder.bottleName.setText(R.string.unknown_device);
+            }
+            if (mBottleRack.bottleIsKnown(bottle.getMac())) {
+            	viewHolder.bottleName.setTextColor(
+            			getResources().getColor(R.color.green));
+            }
+            viewHolder.bottleAddress.setText(bottle.getMac());
+
+            return view;
+        }
+    }
+
+    static class ViewHolder {
+        TextView bottleName;
+        TextView bottleAddress;
+    }
+
+/*	private void setUpActionBarWithTabs(){
 
 		if(DEBUG) Log.e(TAG, "+++ setUpActionBarWithTabs +++");
 	
@@ -267,10 +432,10 @@ public class MainActivity extends ActionBarActivity implements TabListener {
         return mViewPager;
 	}
 	
-    /**
+    *//**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
-     */
+     *//*
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     	private final static String TAG = "SectionsPagerAdapter";
@@ -311,35 +476,7 @@ public class MainActivity extends ActionBarActivity implements TabListener {
             }
             return null;
         }
-    }
-    
-
-	@SuppressWarnings("unused")
-	private void usePlaceholderFragments (Bundle savedInstanceState) {
-
-		if (savedInstanceState == null) {
-			getSupportFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
-		}
-	}
-
-    /**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
-	}	
-	
+    }*/
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -361,7 +498,7 @@ public class MainActivity extends ActionBarActivity implements TabListener {
 		return super.onOptionsItemSelected(item);
 	}
 
-	@Override
+	/*@Override
 	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
 		// TODO Auto-generated method stub
 		
@@ -379,5 +516,5 @@ public class MainActivity extends ActionBarActivity implements TabListener {
 	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 }
