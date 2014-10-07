@@ -2,6 +2,7 @@ package uni.leipzig.bm2.activities;
 
 import uni.leipzig.bm2.ble.BluetoothLeService;
 import uni.leipzig.bm2.ble.SampleGattAttributes;
+import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bottlemail2.R;
 import android.app.Activity;
@@ -42,9 +43,9 @@ import java.util.List;
  */
 public class BottleDetails extends Activity {
 
-	private static final String TAG = "BottleDetails";
-	private static final boolean DEBUG = true;
-
+	private static final boolean DEBUG = BottleMailConfig.BOTTLE_DETAILS_DEBUG;	
+    private final static String TAG = BottleDetails.class.getSimpleName();
+    
     private ExpandableListView mMessagesList;
     private TextView mConnectionState;
     private TextView mDataField;
@@ -55,6 +56,7 @@ public class BottleDetails extends Activity {
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
     private boolean mConnected = false;
+    private boolean isBound = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private final String LIST_NAME = "NAME";
@@ -128,7 +130,10 @@ public class BottleDetails extends Activity {
                     if (mGattCharacteristics != null) {
                         final BluetoothGattCharacteristic characteristic =
                                 mGattCharacteristics.get(groupPosition).get(childPosition);
-                        Log.d(TAG, characteristic.getService() +" | "+ characteristic.getProperties() +" | "+ characteristic.getUuid() +" | "+ characteristic.getWriteType());
+                        Log.d(TAG, characteristic.getService() 
+                        		+" | "+ characteristic.getProperties() 
+                                +" | "+ characteristic.getUuid() 
+                                +" | "+ characteristic.getWriteType());
                         final int charaProp = characteristic.getProperties();
                         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                             // If there is an active notification on a characteristic, clear
@@ -172,32 +177,34 @@ public class BottleDetails extends Activity {
 		mDeviceName = mBottle.getBottleName();
 		mDeviceID = mBottle.getBottleID();
 		mDeviceAddress = mBottle.getMac();
-		
-		Toast.makeText(this, 
-				mDeviceName, Toast.LENGTH_SHORT).show();
-
-		if(mBottle.getBottleID() >= 0 ) {
-			((TextView) findViewById(R.id.tv_bottle_id_value))
-			.setText(Integer.valueOf(mDeviceID).toString());
-		}
-		if(!mBottle.getMac().isEmpty()) {
-			((TextView) findViewById(R.id.tv_mac_value))
-			.setText(mDeviceAddress);
-		}
-		
-		mMessagesList = (ExpandableListView) findViewById(R.id.list_messages);
-		mMessagesList.setOnChildClickListener(servicesListClickListner);
-        mConnectionState = (TextView) findViewById(R.id.conn_state);
-        mDataField = (TextView) findViewById(R.id.data_value);
-		
-		assureInternetConnection();
 
 		// set actionbar titles
 		getActionBar().setTitle(mDeviceName);
 		getActionBar().setSubtitle(R.string.action_subtitle_compose);
+		
+		Toast.makeText(this, 
+				mDeviceName, Toast.LENGTH_SHORT).show();
 
-        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+		if(mDeviceID >= 0 ) {
+			((TextView) findViewById(R.id.tv_bottle_id_value))
+			.setText(Integer.valueOf(mDeviceID).toString());
+		}
+		if(!mDeviceAddress.isEmpty()) {
+			((TextView) findViewById(R.id.tv_mac_value))
+			.setText(mDeviceAddress);
+		}
+
+		assureInternetConnection();
+
+		if( !mDeviceAddress.equals("ca:fe:ca:fe:ca:fe") ) {
+			mMessagesList = (ExpandableListView) findViewById(R.id.list_messages);
+			mMessagesList.setOnChildClickListener(servicesListClickListner);
+	        mConnectionState = (TextView) findViewById(R.id.conn_state);
+	        mDataField = (TextView) findViewById(R.id.data_value);
+
+	        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+	        isBound = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+		}
 		
 	}
 
@@ -226,7 +233,10 @@ public class BottleDetails extends Activity {
         super.onDestroy();
         if(DEBUG) Log.e(TAG,"+++ onDestroy +++");
 		
-        unbindService(mServiceConnection);
+        if (isBound) {
+        	unbindService(mServiceConnection);
+        	isBound = false;
+        }
         mBluetoothLeService = null;
     }
 
@@ -251,8 +261,10 @@ public class BottleDetails extends Activity {
 		
         switch(item.getItemId()) {
             case R.id.menu_connect:
-            	// TODO: that works, but is slow.. why?
-                mBluetoothLeService.connect(mDeviceAddress);
+        		if( !mDeviceAddress.equals("ca:fe:ca:fe:ca:fe") ) {
+        			// TODO: that works, but is slow.. why?
+        			mBluetoothLeService.connect(mDeviceAddress);
+        		}
             	return true;
             case R.id.menu_disconnect:
                 mBluetoothLeService.disconnect();

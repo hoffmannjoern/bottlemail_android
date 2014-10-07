@@ -1,3 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_refresh"
+          android:checkable="false"
+          android:orderInCategory="1"
+          android:showAsAction="ifRoom"/>
+    <item android:id="@+id/menu_scan"
+          android:title="@string/menu_scan"
+          android:orderInCategory="100"
+          android:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/menu_stop"
+          android:title="@string/menu_stop"
+          android:orderInCategory="101"
+          android:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/menu_test"
+          android:title="@string/menu_test"
+          android:orderInCategory="102"
+          android:showAsAction="ifRoom|withText"/>
+</menu>
+
+<!-- Old Settings -->
+<!-- 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,3 +31,4 @@
         app:showAsAction="never"/>
 
 </menu>
+ -->

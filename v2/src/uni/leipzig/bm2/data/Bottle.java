@@ -1,16 +1,25 @@
 package uni.leipzig.bm2.data;
 
 import java.util.Calendar;
+
+import uni.leipzig.bm2.config.BottleMailConfig;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 import android.util.SparseArray;
 
 public class Bottle implements Parcelable{
 
+	private static final boolean DEBUG = BottleMailConfig.BOTTLE_DEBUG;	
+    private final static String TAG = Bottle.class.getSimpleName();
+    
 	//TODO just copied from Version1, no changes
 	
 	private int bottleID;
 	private String bottleName;
+	private String mac;
+	private String geolocation;
+	private int color;
 	//<bmailID,BMailObjekt>
 	private SparseArray<MailContent> bmails = 
 			new SparseArray<MailContent>();
@@ -18,27 +27,37 @@ public class Bottle implements Parcelable{
 	private int absoluteTotalNumberOfMsgsOnBottleFromWS;
 	private String protocolVersionMajor;
 	private String protocolVersionMinor;
-	private String mac;
-	private String geolocation;
-	private int color;
 
 	//wird bei erster ueberpruefung auf geloeschte Nachrichten gesetzt
 	private Calendar delTimestamp = null;
 
 	public Bottle(int id, String name, String mac){
+		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name, mac) +++");
 		
 		this.bottleID = id;
 		this.bottleName = name;		
 		this.mac = mac;
 	}
 	
+	public Bottle(String name, String mac) {
+		if(DEBUG) Log.e(TAG, "+++ Constructor(name, mac) +++");
+		
+		this.bottleName = name;
+		this.mac = mac;
+	}
+	
 	public Bottle(int id, String name){
+		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name) +++");
 		
 		this.bottleID = id;
-		this.bottleName = name;		
+		this.bottleName = name;	
+		//TODO: set mac with help of webservice
+		this.mac = "ca:fe:ca:fe:ca:fe";
 	}
 
 	public Bottle(Parcel parcel){
+		if(DEBUG) Log.e(TAG, "+++ Constructor(parcel) +++");
+		
 		bottleID = parcel.readInt();
 		bottleName = parcel.readString();
 		mac = parcel.readString();

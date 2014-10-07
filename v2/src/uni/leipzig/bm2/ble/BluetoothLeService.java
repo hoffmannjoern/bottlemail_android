@@ -16,6 +16,10 @@
 
 package uni.leipzig.bm2.ble;
 
+import java.util.List;
+import java.util.UUID;
+
+import uni.leipzig.bm2.config.BottleMailConfig;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -32,17 +36,16 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.util.List;
-import java.util.UUID;
-
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
  */
 public class BluetoothLeService extends Service {
-    private final static String TAG = BluetoothLeService.class.getSimpleName();
 
+	private static final boolean DEBUG = BottleMailConfig.BLE_SERVICE_DEBUG;	
+    private final static String TAG = BluetoothLeService.class.getSimpleName();
+    
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;

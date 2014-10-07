@@ -2,11 +2,15 @@ package uni.leipzig.bm2.data;
 
 import java.util.ArrayList;
 
-
+import uni.leipzig.bm2.config.BottleMailConfig;
+import android.util.Log;
 import android.util.SparseArray;
 
 public class BottleRack {
-	
+
+	private static final boolean DEBUG = BottleMailConfig.BOTTLERACK_DEBUG;	
+    private final static String TAG = BottleRack.class.getSimpleName();
+    
 	//TODO just copied from Version1, no changes
 	
 	private static BottleRack bottleRack = new BottleRack();
@@ -18,6 +22,7 @@ public class BottleRack {
 	private ArrayList<Bottle> arrayOfBottles;
 
 	private BottleRack(){
+		if(DEBUG) Log.e(TAG, "+++ Constructor +++");
 		
 		//this.bottles = new HashMap<String,Bottle>();
 		this.bottles = new SparseArray<Bottle>();
@@ -25,7 +30,7 @@ public class BottleRack {
 	}
 
 	public static BottleRack getInstance(){
-		
+		if(DEBUG) Log.e(TAG, "+++ getInstance +++");		
 		return bottleRack ;	
 	}
 	
@@ -63,6 +68,11 @@ public class BottleRack {
 		return (bottles.indexOfKey(btlID)>=0);		
 	}
 	
+	/**
+	 * 
+	 * @param btl Bottle object (needs at least mac)
+	 * @return true if added, false if mac of bottle is already known
+	 */
 	public boolean addBottleToRack(Bottle btl){
 		// is bottle already known
 		if( !bottleIsKnown(btl.getMac()) ) {

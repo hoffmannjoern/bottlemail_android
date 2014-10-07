@@ -1,8 +1,8 @@
 package uni.leipzig.bm2.activities;
 
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 
+import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
 import uni.leipzig.bottlemail2.R;
@@ -32,9 +32,8 @@ import android.widget.Toast;
 
 public class MainActivity extends ListActivity {//extends ActionBarActivity implements TabListener {
 	
-	private static final boolean DEBUG = true;
-	
-    private final static String TAG = "MainActivity";
+	private static final boolean DEBUG = BottleMailConfig.MAIN_ACTIVITY_DEBUG;	
+    private final static String TAG = MainActivity.class.getSimpleName();
     
 //	private SectionsPagerAdapter mSectionsPagerAdapter;
 //	private ViewPager mViewPager;
@@ -66,8 +65,8 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		if(DEBUG) Log.e(TAG, "+++ onCreate +++");
+		
 		getActionBar().setTitle(R.string.app_name);
 
 //		setContentView(R.layout.activity_main);
@@ -75,6 +74,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
         
         initializeBluetoothAdapter();
  		testBluetoothSupportOfDevice();
+
  		scanLeDevice(true);
 	}
 
@@ -113,7 +113,52 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 			finish();	
 		} 
 	}
-	
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+		if(DEBUG) Log.e(TAG, "+++ onCreateOptionsMenu +++");
+		
+        getMenuInflater().inflate(R.menu.main, menu);
+        if (!mScanning) {
+            menu.findItem(R.id.menu_stop).setVisible(false);
+            menu.findItem(R.id.menu_scan).setVisible(true);            	
+            menu.findItem(R.id.menu_refresh).setActionView(null);
+        } else {
+            menu.findItem(R.id.menu_stop).setVisible(true);
+            menu.findItem(R.id.menu_scan).setVisible(false);
+            menu.findItem(R.id.menu_refresh).setActionView(
+                    R.layout.actionbar_indeterminate_progress);
+        }
+        if(DEBUG)
+        	menu.findItem(R.id.menu_test).setVisible(true);
+        else
+        	menu.findItem(R.id.menu_test).setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+		if(DEBUG) Log.e(TAG, "+++ onOptionsItemSelected +++");
+		
+        switch (item.getItemId()) {
+            case R.id.menu_scan:
+                mScannedBottlesListAdapter.clear();
+                scanLeDevice(true);
+                break;
+            case R.id.menu_stop:
+                scanLeDevice(false);
+                // TODO: stop or remove indeterminate_progress icon
+                //menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_indeterminate_progress);
+                break;
+            case R.id.menu_test:
+        		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle+++");
+            	mScannedBottlesListAdapter.addTestBottleToScannedList();
+       			mScannedBottlesListAdapter.notifyDataSetChanged();
+            	break;
+        }
+        return true;
+    }
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -184,16 +229,13 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
         if (bottle == null) return;
         
         //TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
+        // - actual the getView 
         if( (mBottleRack.addBottleToRack(bottle)) == true) {
         	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
         } else {
         	if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
         }        
         
-//        final Intent intent = new Intent(this, DeviceControlActivity.class);
-//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, bottle.getBottleName());
-//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, bottle.getMac());
-		
 		// aus string zweite zeile in Integer wandeln           	
 		Intent intent = new Intent(this, BottleDetails.class);
 		Bundle bundle = new Bundle();
@@ -287,10 +329,12 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
     			// find out: kind of bottle
     			if ( device.getName() != null) {
     				//TODO: Set further information about bottle here
+    				// - DONE setColor
     				// - actual GPS information, if given free
     				// - get id from webservice or use mac to identify definetly
     				Bottle bottle = new Bottle(
     						mScannedBottles.size()+1, device.getName(), device.getAddress());
+    				bottle.setColor(getResources().getColor(R.color.black));
                     mScannedBottles.add(bottle);
                     return 1;
     			} else {
@@ -302,6 +346,19 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
     		return -1;
         }
 
+        protected void addTestBottleToScannedList() {
+        	Bottle bottle = new Bottle(0, "Bottle0");
+    		for (int i = 0; i < mScannedBottles.size(); i++) {
+    			if (mScannedBottles.get(i).getMac().equals(bottle.getMac())){
+        			Log.e(TAG, "Device already in list!");
+            		if(DEBUG) Log.e(TAG, "+++ TestBottle already in list +++");
+    				return;
+    			}
+    		}
+    		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle +++");
+        	mScannedBottles.add(bottle);
+        }
+        
         public Bottle getBottle(int position) {
             return mScannedBottles.get(position);
         }
@@ -346,9 +403,11 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
             } else {
                 viewHolder.bottleName.setText(R.string.unknown_device);
             }
+            // set color of name text to green if known, else leave it black
             if (mBottleRack.bottleIsKnown(bottle.getMac())) {
+            	bottle.setColor(getResources().getColor(R.color.green));
             	viewHolder.bottleName.setTextColor(
-            			getResources().getColor(R.color.green));
+            			bottle.getColor());
             }
             viewHolder.bottleAddress.setText(bottle.getMac());
 
@@ -478,7 +537,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
         }
     }*/
 
-	@Override
+	/*@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar 
 		// if it is present.
@@ -496,7 +555,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
+	}*/
 
 	/*@Override
 	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {

@@ -1,4 +1,4 @@
-package unused;
+package uni.leipzig.bm2.unused;
 
 import android.bluetooth.BluetoothAdapter;
 import android.util.Log;

@@ -4,10 +4,14 @@ import java.util.Calendar;
 
 import org.json.JSONException;
 
+import uni.leipzig.bm2.config.BottleMailConfig;
 import android.location.Location;
 
 public class MailContent {
 
+	private static final boolean DEBUG = BottleMailConfig.MAIL_CONTENT_DEBUG;	
+    private final static String TAG = MailContent.class.getSimpleName();
+    
 	//TODO just copied from Version1 
 	// -> old name: BMail changed to MailContent
 	

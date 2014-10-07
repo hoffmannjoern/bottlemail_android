@@ -18,10 +18,16 @@ package uni.leipzig.bm2.ble;
 
 import java.util.HashMap;
 
+import uni.leipzig.bm2.config.BottleMailConfig;
+
 /**
  * This class includes a small subset of standard GATT attributes for demonstration purposes.
  */
 public class SampleGattAttributes {
+	
+	private static final boolean DEBUG = BottleMailConfig.SAMPLE_GATT_DEBUG;	
+    private final static String TAG = SampleGattAttributes.class.getSimpleName();
+    
     private static HashMap<String, String> attributes = new HashMap<String, String>();
     public static String BMAIL_HELLO = "00002a00-0000-1000-8000-00805f9b34fb";
     public static String BMAIL_CONFIG_DESCRIPTOR = /*"00002a01-0000-1000-8000-00805f9b34fb";*/"00002902-0000-1000-8000-00805f9b34fb";
