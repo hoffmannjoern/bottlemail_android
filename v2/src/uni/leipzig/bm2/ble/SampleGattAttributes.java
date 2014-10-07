@@ -18,6 +18,8 @@ package uni.leipzig.bm2.ble;
 
 import java.util.HashMap;
 
+import android.util.Log;
+
 import uni.leipzig.bm2.config.BottleMailConfig;
 
 /**
@@ -46,6 +48,8 @@ public class SampleGattAttributes {
     }
 
     public static String lookup(String uuid, String defaultName) {
+		if(DEBUG) Log.e(TAG, "+++ lookup +++");
+		
         String name = attributes.get(uuid);
         return name == null ? defaultName : name;
     }

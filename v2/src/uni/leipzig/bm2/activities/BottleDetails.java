@@ -1,5 +1,9 @@
 package uni.leipzig.bm2.activities;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import uni.leipzig.bm2.ble.BluetoothLeService;
 import uni.leipzig.bm2.ble.SampleGattAttributes;
 import uni.leipzig.bm2.config.BottleMailConfig;
@@ -18,6 +22,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -30,10 +35,6 @@ import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -45,7 +46,14 @@ public class BottleDetails extends Activity {
 
 	private static final boolean DEBUG = BottleMailConfig.BOTTLE_DETAILS_DEBUG;	
     private final static String TAG = BottleDetails.class.getSimpleName();
-    
+
+//	private Context mContext;
+//	private LayoutInflater mInflater;
+
+	private boolean isInternetPresent;
+	
+	private static Bottle mBottle;
+
     private ExpandableListView mMessagesList;
     private TextView mConnectionState;
     private TextView mDataField;
@@ -156,13 +164,6 @@ public class BottleDetails extends Activity {
                 }
     };  
     
-//	private Context mContext;
-//	private LayoutInflater mInflater;
-
-	private boolean isInternetPresent;
-	
-	private static Bottle mBottle;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -371,11 +372,26 @@ public class BottleDetails extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
+
+    public void showLocationOnMap(View v) {
+		if(DEBUG) Log.e(TAG, "+++ showLocationOnMap +++");
+
+		//geo:LAT,LONG?q=LAT,LONG(Place)&z=10
+		Uri location = Uri.parse(
+				"geo:" + String.valueOf(mBottle.getLatitude())
+				+ "," + String.valueOf(mBottle.getLongitude())
+				+ "?q=" + String.valueOf(mBottle.getLatitude()) 
+				+ "," + String.valueOf(mBottle.getLongitude())
+				+ "(" + mDeviceName + ")&z=10"
+				);
+		
+		Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+		startActivity(mapIntent);
+    }
     
 	public void sendMessage(View view) {
         if(DEBUG) Log.e(TAG,"+++ sendMessage +++");
 		
-		String message = mBottle.getBottleName();
 		//TODO
 		//connect to bluetooth device
 		//send message

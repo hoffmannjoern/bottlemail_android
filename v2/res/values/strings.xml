@@ -22,9 +22,8 @@
     <string name="title_activity_bottle_details">BottleDetails</string>
     <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
     <string name="tv_bottleid">Flaschennumer: </string>
-    <string name="tv_bottleid_value">0</string>
     <string name="tv_mac">Flaschen-Mac: </string>
-    <string name="tv_mac_value">ca:fe:ca:fe</string>
+    <string name="tv_data">Daten: </string>
     <string name="tv_delete_timestamp">Nachricht gelöscht</string>
     <string name="btn_show_message">Zeige Nachricht</string>
     <string name="btn_send_message">Sende</string>

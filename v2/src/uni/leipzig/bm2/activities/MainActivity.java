@@ -6,6 +6,7 @@ import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
 import uni.leipzig.bottlemail2.R;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
@@ -14,10 +15,12 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,26 +44,32 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 //	private static final String BLUETOOTH_DEVICE_FOUND = 
 //			"uni.leipzig.bm2.activities.BLUETOOTH_DEVICE_FOUND";
 
+    // Memory-Handling
     //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory
     // - Tutorial for android security has an example for hashing with non-readable passphrase (or sth. like this)
     // - Watch for saving files / logging of bottles, for example in xml-file
     private static BottleRack mBottleRack = BottleRack.getInstance();
     
+    // Bluetooth-Handling
 	private static BluetoothAdapter mBluetoothAdapter;
+    private static final int REQUEST_ENABLE_BT = 666;
 	private static boolean mScanning;
 	private static Handler mHandler;
 
-	private static final int REQUEST_ENABLE_BT = 666;
-	
-    // Stops scanning after 10 seconds.
-    private static final long SCAN_PERIOD = 10000;
-
-    
 	private static ScannedBottlesListAdapter mScannedBottlesListAdapter;
 	
+	// Stops scanning after 10 seconds.
+    private static final long SCAN_PERIOD_BLE = 10000;
+    
+    // Location-Handling
+    private static LocationManager mLocationManager;
+    private static LocationListener mLocationListener;
+    private static final long SCAN_PERIOD_LOC = 30000;
+    private static final long SCAN_RANGE_LOC = 50;
+    
+    
 	public static final String SHOW_BOTTLE_DETAILS = 
 			"uni.leipzig.bm2.activities.SHOW_BOTTLE_DETAILS";
-	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,27 +81,63 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 //		setContentView(R.layout.activity_main);
 //        setUpActionBarWithTabs();
         
-        initializeBluetoothAdapter();
+        // different behaviour since API 18 
+ 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
+ 			initializeBluetoothAdapterWithManager();
+ 		else
+ 	        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+ 				
  		testBluetoothSupportOfDevice();
 
- 		scanLeDevice(true);
+		// Aquire a reference to the system Location Manager
+		initializeLocationManagerandListener();
+
+        mHandler = new Handler();
 	}
 
-	private void initializeBluetoothAdapter () {
-		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapter +++");
+	private void initializeLocationManagerandListener() {
+		if(DEBUG) Log.e(TAG, "+++ initializeLocationManagerandListener +++");
 		
-        mHandler = new Handler();
-        
-        // different behaviour since API 18 
- 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
- 			// TODO: do it this way, when supporting at least API 18, do we?
- 			final BluetoothManager bluetoothManager = 
- 					(BluetoothManager) 
- 					getSystemService(Context.BLUETOOTH_SERVICE);	
- 			mBluetoothAdapter = bluetoothManager.getAdapter();
- 		} else {
- 	        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
- 		} 	
+		// TODO: Defining model for best performance (see tutorial)
+		mLocationManager = (LocationManager) 
+				this.getSystemService(Context.LOCATION_SERVICE);
+		
+		mLocationListener = new LocationListener() {
+
+			@Override
+			public void onLocationChanged(Location location) {
+				if(DEBUG) Log.e(TAG, "+++ onLocationChanged +++");
+				// TODO Auto-generated method stub	
+				// Called when a new location is found by provider at speicified time and range
+				// makeUseOfNewLocation(location)
+			}
+			
+			@Override
+			public void onStatusChanged(String provider, int status, Bundle extras) {
+				// TODO Auto-generated method stub
+			}
+			
+			@Override
+			public void onProviderEnabled(String provider) {
+				// TODO Auto-generated method stub
+			}
+			
+			@Override
+			public void onProviderDisabled(String provider) {
+				// TODO Auto-generated method stub
+			}
+		};
+	}
+	
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+	private void initializeBluetoothAdapterWithManager () {
+		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapterWithManager +++");
+		
+		// TODO: do it this way, when supporting at least API 18, do we?
+		final BluetoothManager bluetoothManager = 
+				(BluetoothManager) 
+				getSystemService(Context.BLUETOOTH_SERVICE);	
+		mBluetoothAdapter = bluetoothManager.getAdapter();
 	}
 	
 	private void testBluetoothSupportOfDevice () {
@@ -144,11 +189,17 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
             case R.id.menu_scan:
                 mScannedBottlesListAdapter.clear();
                 scanLeDevice(true);
+        		mLocationManager.requestLocationUpdates(
+        				LocationManager.NETWORK_PROVIDER, 
+        				SCAN_PERIOD_LOC, 
+        				SCAN_RANGE_LOC, 
+        				mLocationListener);
                 break;
             case R.id.menu_stop:
                 scanLeDevice(false);
                 // TODO: stop or remove indeterminate_progress icon
                 //menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_indeterminate_progress);
+                mLocationManager.removeUpdates(mLocationListener);
                 break;
             case R.id.menu_test:
         		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle+++");
@@ -177,6 +228,21 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
         mScannedBottlesListAdapter = new ScannedBottlesListAdapter();
         setListAdapter(mScannedBottlesListAdapter);
         scanLeDevice(true);
+		
+        //TODO: Decide: Do we want a GPS location, or fits a network only location
+		// What do we expect?
+		// To register for both just request location update types both (see location strategies tutorial)
+		// For both we need the ACCESS_FINE_LOCATION permission, for network we only need ACCESS_COARSE_LOCATION
+		// Register the listener with the Location Manager to receive location updates
+		// Register for Network-Provider Updates
+		mLocationManager.requestLocationUpdates(
+				LocationManager.NETWORK_PROVIDER, 
+				SCAN_PERIOD_LOC, 
+				SCAN_RANGE_LOC, 
+				mLocationListener);
+		// Register for GPS-Provider Updates
+//		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+//				SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
 	}
 
     @Override
@@ -212,6 +278,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 		
         scanLeDevice(false);
         mScannedBottlesListAdapter.clear();
+        mLocationManager.removeUpdates(mLocationListener);
     }
 
 /*	@Override
@@ -230,6 +297,21 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
         
         //TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
         // - actual the getView 
+        
+        // Set location to Bottleobject
+        // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
+        // maybe decide for only one provider
+        if (mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!=null) {
+        	bottle.setGeoLocation(mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
+        } else { 
+        	Log.e(TAG, "Network Provider knows nothing!");
+        }
+//        if (mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!=null)
+//        	bottle.setGeoLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+//        else 
+//        	Log.e(TAG, "GPS Provider knows nothing!");
+        
+        // add bottle to bottlerack, if it is not there 
         if( (mBottleRack.addBottleToRack(bottle)) == true) {
         	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
         } else {
@@ -239,7 +321,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
 		// aus string zweite zeile in Integer wandeln           	
 		Intent intent = new Intent(this, BottleDetails.class);
 		Bundle bundle = new Bundle();
-		bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);		
+		bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);
 		intent.putExtras(bundle);
 
         if (mScanning) {
@@ -264,7 +346,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
-            }, SCAN_PERIOD);
+            }, SCAN_PERIOD_BLE);
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -330,7 +412,8 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
     			if ( device.getName() != null) {
     				//TODO: Set further information about bottle here
     				// - DONE setColor
-    				// - actual GPS information, if given free
+    				// - DONE IN ONITEMCLICK actual GPS information, if given free 
+    				// -> TODO: Do we need that earlier?
     				// - get id from webservice or use mac to identify definetly
     				Bottle bottle = new Bottle(
     						mScannedBottles.size()+1, device.getName(), device.getAddress());
@@ -355,7 +438,7 @@ public class MainActivity extends ListActivity {//extends ActionBarActivity impl
     				return;
     			}
     		}
-    		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle +++");
+    		if(DEBUG) Log.e(TAG, "+++ Add TestBottle to ScannedList +++");
         	mScannedBottles.add(bottle);
         }
         

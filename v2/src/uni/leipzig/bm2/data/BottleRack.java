@@ -11,15 +11,12 @@ public class BottleRack {
 	private static final boolean DEBUG = BottleMailConfig.BOTTLERACK_DEBUG;	
     private final static String TAG = BottleRack.class.getSimpleName();
     
-	//TODO just copied from Version1, no changes
-	
 	private static BottleRack bottleRack = new BottleRack();
 	//private HashMap<String,Bottle> bottles; 
-	
-	private String[] registeredBottles;
-	
 	private SparseArray<Bottle> bottles;
 	private ArrayList<Bottle> arrayOfBottles;
+	
+	//private String[] registeredBottles;
 
 	private BottleRack(){
 		if(DEBUG) Log.e(TAG, "+++ Constructor +++");
