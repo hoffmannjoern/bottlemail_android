@@ -36,11 +36,16 @@ public class BottleRack {
 	}
 	
 	// returns a certain bottle from the rack
-	public Bottle getBottle(long btlID){
+	public Bottle getBottle(int index){
 		
-		return bottles.get( (int) btlID);
+		return bottles.get(index);
 	}
 
+	public boolean isEmpty() {
+		if (bottles.size()>0) 
+			return false;
+		return true;
+	}
 	// returns all bottles from the rack
 //	public HashMap<String, Bottle> getAllBottles(){
 //		return (HashMap<String,Bottle>) bottles.clone();

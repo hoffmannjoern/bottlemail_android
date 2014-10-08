@@ -20,7 +20,7 @@ public class Bottle implements Parcelable{
 	// Standard geo-location: Sternburg Brauerei Leipzig 
 	private double longitude = 12.400581;
 	private double latitude = 51.330117;
-	private int color;
+	private int color = 0;
 	
 	//<bmailID,BMailObjekt>
 	private SparseArray<MailContent> bmails = 
