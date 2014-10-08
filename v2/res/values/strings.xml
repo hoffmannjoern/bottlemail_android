@@ -21,11 +21,11 @@
     <!-- BottleDetails strings -->
     <string name="title_activity_bottle_details">BottleDetails</string>
     <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
-    <string name="tv_bottleid">Flaschennumer: </string>
-    <string name="tv_mac">Flaschen-Mac: </string>
+    <string name="tv_bottleid">FlaschenID: </string>
+    <string name="tv_mac">FlaschenMac: </string>
     <string name="tv_data">Daten: </string>
     <string name="tv_delete_timestamp">Nachricht gelöscht</string>
-    <string name="btn_show_message">Zeige Nachricht</string>
+    <string name="btn_show_message">Nachrichten</string>
     <string name="btn_send_message">Sende</string>
     <string name="btn_show_map">Karte</string>
     <string name="alert_title_no_internet_conn">Kein Internetzugang</string>
@@ -41,9 +41,12 @@
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
+    
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="menu_test">Test</string>
+    
+    <string name="menu_get">Hole mehr!</string>
 
     <!-- Alert Dialog -->
     <string name="alert_btn_okay">Okay</string>
@@ -52,4 +55,7 @@
     <string name="title_activity_device_details">DeviceDetails</string>
     <string name="title_activity_main_tab">MainTabActivity</string>
 
+    <!-- BottleDetails strings -->
+    <string name="title_activity_message">Nachrichten-Ansicht</string>
+    <string name="subtitle_activity_message">Flaschennachrichten</string>
 </resources>

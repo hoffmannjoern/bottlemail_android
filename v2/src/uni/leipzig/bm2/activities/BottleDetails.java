@@ -70,6 +70,10 @@ public class BottleDetails extends Activity {
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
+    
+	public static final String SHOW_MESSAGES = 
+			"uni.leipzig.bm2.activities.SHOW_MESSAGES";
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -387,6 +391,16 @@ public class BottleDetails extends Activity {
 		
 		Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
 		startActivity(mapIntent);
+    }
+    
+    public void showMessage(View view) {
+        if(DEBUG) Log.e(TAG,"+++ showMessage +++");
+		
+    	Intent messageIntent = new Intent(this, MessageActivity.class);
+    	Bundle bundle = new Bundle();
+    	bundle.putParcelable(SHOW_MESSAGES, mBottle);
+    	messageIntent.putExtras(bundle);
+    	startActivity(messageIntent);
     }
     
 	public void sendMessage(View view) {
