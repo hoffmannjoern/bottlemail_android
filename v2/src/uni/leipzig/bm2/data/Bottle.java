@@ -11,12 +11,14 @@ import android.util.SparseArray;
 
 public class Bottle implements Parcelable{
 
-	private static final boolean DEBUG = BottleMailConfig.BOTTLE_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.DATA_DEBUG;	
     private final static String TAG = Bottle.class.getSimpleName();
     
 	private int bottleID;
+	private String mac = "";
 	private String bottleName;
-	private String mac = "ca:fe:ca:fe:ca:fe";
+	private String foundDate = null;
+	private String deletedAt = null;
 	// Standard geo-location: Sternburg Brauerei Leipzig 
 	private double longitude = 12.400581;
 	private double latitude = 51.330117;
@@ -30,13 +32,10 @@ public class Bottle implements Parcelable{
 	private String protocolVersionMajor;
 	private String protocolVersionMinor;
 
-	//wird bei erster ueberpruefung auf geloeschte Nachrichten gesetzt
-	private Calendar delTimestamp = null;
-
-	public Bottle(int id, String name, String mac){
+	public Bottle(int bottleID, String name, String mac){
 		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name, mac) +++");
 		
-		this.bottleID = id;
+		this.bottleID = bottleID;
 		this.bottleName = name;		
 		this.mac = mac;
 	}
@@ -48,15 +47,6 @@ public class Bottle implements Parcelable{
 		this.mac = mac;
 	}
 	
-	public Bottle(int id, String name){
-		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name) +++");
-		
-		this.bottleID = id;
-		this.bottleName = name;	
-		//TODO: set mac with help of webservice
-		//this.mac = "ca:fe:ca:fe:ca:fe";
-	}
-
 	public Bottle(Parcel parcel){
 		if(DEBUG) Log.e(TAG, "+++ Constructor(parcel) +++");
 		
@@ -105,9 +95,9 @@ public class Bottle implements Parcelable{
 	public int getBottleID() {
 		return bottleID;
 	}
-
-	public String getBottleName() {
-		return bottleName;
+	
+	public void setBottleID(int bottleID) {
+		this.bottleID = bottleID;
 	}
 
 	public String getMac() {
@@ -116,6 +106,30 @@ public class Bottle implements Parcelable{
 
 	public void setMac(String mac) {
 		this.mac = mac;
+	}
+
+	public String getBottleName() {
+		return bottleName;
+	}
+
+	public void setBottleName(String bottleName) {
+		this.bottleName = bottleName;
+	}
+	
+	public String getFoundDate() {
+		return foundDate;
+	}
+
+	public void setFoundDate(String foundDate) {
+		this.foundDate = foundDate;
+	}
+	
+	public String getDeleteDate() {
+		return deletedAt;
+	}
+
+	public void setDeleteDate(String deletedAt) {
+		this.deletedAt = deletedAt;
 	}
 	
 	public double getLongitude() {
@@ -139,6 +153,43 @@ public class Bottle implements Parcelable{
 		this.color = resourceID;
 	}
 
+	public void setAbsoluteTotalNumberOfMsgsOnBottle(
+			int absoluteTotalNumberOfMsgsOnBottle) {
+		this.absoluteTotalNumberOfMsgsOnBottle = 
+				absoluteTotalNumberOfMsgsOnBottle;
+	}
+	
+	public int getAbsoluteTotalNumberOfMsgsOnBottle () {
+		return absoluteTotalNumberOfMsgsOnBottle;
+	}
+
+	public void setAbsoluteTotalNumberOfMsgsOnBottleFromWS(
+			int absoluteTotalNumberOfMsgsOnBottleFromWS) {
+		this.absoluteTotalNumberOfMsgsOnBottleFromWS = 
+				absoluteTotalNumberOfMsgsOnBottleFromWS;
+	}
+
+	public int setAbsoluteTotalNumberOfMsgsOnBottleFromWS () {
+		return absoluteTotalNumberOfMsgsOnBottleFromWS;
+	}
+
+	public void setProtocolVersionMajor(String protocolVersionMajor) {
+		this.protocolVersionMajor = protocolVersionMajor;
+	}
+
+	public String getProtocolVersionMajor () {
+		return protocolVersionMajor;
+	}
+	
+	public void setProtocolVersionMinor(String protocolVersionMinor) {
+		this.protocolVersionMinor = protocolVersionMinor;
+	}	
+
+	public String protocolVersionMinor () {
+		return protocolVersionMinor;
+	}
+	
+	
 	public MailContent createNewBMail(int mID, String txt, 
 			String author, Calendar tStamp, boolean isDel) throws Exception{
 		if(DEBUG) Log.e(TAG, "+++ createNewBMail +++");
@@ -194,47 +245,4 @@ public class Bottle implements Parcelable{
 		return (this.bmails.indexOfKey(mID) >= 0);			
 	}
 
-	public void setAbsoluteTotalNumberOfMsgsOnBottle(
-			int absoluteTotalNumberOfMsgsOnBottle) {
-		this.absoluteTotalNumberOfMsgsOnBottle = 
-				absoluteTotalNumberOfMsgsOnBottle;
-	}
-	
-	public int getAbsoluteTotalNumberOfMsgsOnBottle () {
-		return absoluteTotalNumberOfMsgsOnBottle;
-	}
-
-	public void setAbsoluteTotalNumberOfMsgsOnBottleFromWS(
-			int absoluteTotalNumberOfMsgsOnBottleFromWS) {
-		this.absoluteTotalNumberOfMsgsOnBottleFromWS = 
-				absoluteTotalNumberOfMsgsOnBottleFromWS;
-	}
-
-	public int setAbsoluteTotalNumberOfMsgsOnBottleFromWS () {
-		return absoluteTotalNumberOfMsgsOnBottleFromWS;
-	}
-
-	public void setProtocolVersionMajor(String protocolVersionMajor) {
-		this.protocolVersionMajor = protocolVersionMajor;
-	}
-
-	public String getProtocolVersionMajor () {
-		return protocolVersionMajor;
-	}
-	
-	public void setProtocolVersionMinor(String protocolVersionMinor) {
-		this.protocolVersionMinor = protocolVersionMinor;
-	}	
-
-	public String protocolVersionMinor () {
-		return protocolVersionMinor;
-	}
-	
-	public Calendar getDelTimestamp() {
-		return delTimestamp;
-	}
-
-	public void setDelTimestamp(Calendar delTimestamp) {
-		this.delTimestamp = delTimestamp;
-	}
 }

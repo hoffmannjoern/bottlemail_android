@@ -14,6 +14,7 @@ public class DataTransformer {
 	
 	final String statusBitHeader = "T";
 	final String TAG = "DataTransformer";
+	final String DC3_TAG = "###";
 	
 	byte[] makeHeader(BMail bMail){
 		//2 byte
@@ -62,8 +63,8 @@ public class DataTransformer {
 			System.arraycopy(b, 0, header, bLength, bLength);
 			headerPos += bLength;
 		}
-		Log.d("########################### header-length: ",header.length+"");
-		Log.d(" ####################### header[0] = ", header[0]+"");
+		Log.d(DC3_TAG+" header-length "+DC3_TAG, String.valueOf(header.length));
+		Log.d(DC3_TAG+" header[0] "+DC3_TAG, String.valueOf(header[0]));
 		return header;
 	}
 

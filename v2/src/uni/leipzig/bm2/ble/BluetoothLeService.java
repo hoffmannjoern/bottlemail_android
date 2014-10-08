@@ -43,7 +43,7 @@ import android.util.Log;
  */
 public class BluetoothLeService extends Service {
 
-	private static final boolean DEBUG = BottleMailConfig.BLE_SERVICE_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.BLE_DEBUG;	
     private final static String TAG = BluetoothLeService.class.getSimpleName();
     
     private BluetoothManager mBluetoothManager;

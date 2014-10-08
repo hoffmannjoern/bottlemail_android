@@ -1,5 +1,7 @@
 package uni.leipzig.bm2.activities;
 
+import java.util.Calendar;
+
 import uni.leipzig.bm2.adapter.ScannedBottlesListAdapter;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
@@ -30,7 +32,7 @@ import android.widget.Toast;
 
 public class MainActivity extends ListActivity {
 	
-	private static final boolean DEBUG = BottleMailConfig.MAIN_ACTIVITY_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
 
     // Memory-Handling
@@ -192,7 +194,7 @@ public class MainActivity extends ListActivity {
                 break;
             case R.id.menu_test:
         		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle+++");
-            	mScannedBottlesListAdapter.addTestBottleToScannedList();
+            	mScannedBottlesListAdapter.addTestBottleToScannedList("ca:fe:ca:fe:ca:fe");
        			mScannedBottlesListAdapter.notifyDataSetChanged();
             	break;
         }
@@ -269,14 +271,20 @@ public class MainActivity extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        final Bottle bottle = mScannedBottlesListAdapter.getBottle(position);
-        if (bottle == null) return;
+		if(DEBUG) Log.e(TAG, "+++ onListItemClick +++");
+
+        if (mScanning) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mScanning = false;
+        }
         
-        //TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
+		final Bottle bottle = mScannedBottlesListAdapter.getBottle(position);
+		if (bottle == null) return;
+
+		//TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
         // - actual the getView 
-//        bottle.setColor(getResources().getColor(R.color.green));
-//		mScannedBottlesListAdapter.notifyDataSetChanged();
-        
+        bottle.setColor(getResources().getColor(R.color.green));
+		mScannedBottlesListAdapter.notifyDataSetChanged();
         
         // Set location to Bottleobject
         // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
@@ -294,6 +302,12 @@ public class MainActivity extends ListActivity {
         // add bottle to bottlerack, if it is not there 
         if( (mBottleRack.addBottleToRack(bottle)) == true) {
         	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
+    		// Set found timestamp to NOW -> the moment of clicking first
+    		bottle.setFoundDate(Calendar.getInstance().toString());
+    		//TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
+            // - actual the getView 
+            bottle.setColor(getResources().getColor(R.color.green));
+    		mScannedBottlesListAdapter.notifyDataSetChanged();
         } else {
         	if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
         }        
@@ -304,10 +318,6 @@ public class MainActivity extends ListActivity {
 		bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);
 		intent.putExtras(bundle);
 
-        if (mScanning) {
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            mScanning = false;
-        }
         startActivity(intent);
     }
 

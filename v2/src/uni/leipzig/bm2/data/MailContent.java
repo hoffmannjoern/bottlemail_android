@@ -9,7 +9,7 @@ import android.location.Location;
 
 public class MailContent {
 
-	private static final boolean DEBUG = BottleMailConfig.MAIL_CONTENT_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.DATA_DEBUG;	
     private final static String TAG = MailContent.class.getSimpleName();
     
 	//TODO just copied from Version1 

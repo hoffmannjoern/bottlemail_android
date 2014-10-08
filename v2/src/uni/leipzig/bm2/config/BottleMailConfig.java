@@ -6,15 +6,17 @@ public class BottleMailConfig {
 	private final static boolean DEBUG = true;
 	
 	//Activities
-	public final static boolean MAIN_ACTIVITY_DEBUG = DEBUG;
-	public final static boolean BOTTLE_DETAILS_DEBUG = DEBUG;
+	public final static boolean ACTIVITY_DEBUG = DEBUG;
+	
+	//Adapter
+	public final static boolean ADAPTER_DEBUG = DEBUG;
 	
 	//Ble-Handling
-	public final static boolean SAMPLE_GATT_DEBUG = DEBUG;
-	public final static boolean BLE_SERVICE_DEBUG = DEBUG;
+	public final static boolean BLE_DEBUG = DEBUG;
 	
 	//Data-Handling
-	public final static boolean BOTTLE_DEBUG = DEBUG;
-	public final static boolean BOTTLERACK_DEBUG = DEBUG;
-	public final static boolean MAIL_CONTENT_DEBUG = DEBUG;
+	public final static boolean DATA_DEBUG = DEBUG;
+	
+	//Database-Handling
+	public final static boolean DB_DEBUG = DEBUG;
 }

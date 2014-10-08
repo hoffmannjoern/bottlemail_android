@@ -3,6 +3,7 @@ package uni.leipzig.bm2.adapter;
 import java.util.ArrayList;
 
 import uni.leipzig.bm2.activities.BottleDetails;
+import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
 import uni.leipzig.bottlemail2.R;
@@ -19,7 +20,7 @@ import android.widget.TextView;
 // Adapter for holding devices found through scanning.
 public class ScannedBottlesListAdapter extends BaseAdapter {
 	
-	private static final boolean DEBUG = true;	
+	private static final boolean DEBUG = BottleMailConfig.ADAPTER_DEBUG;	
     private final static String TAG = BottleDetails.class.getSimpleName();
 
     private ArrayList<Bottle> mScannedBottles;
@@ -31,6 +32,9 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
         super();
 		if(DEBUG) Log.e(TAG, "+++ BottleListAdapter +++");
 
+        mInflator = LayoutInflater.from(context);
+        mResources = resources;
+        
 		//TODO: Maybe replace bottlerack with db-access
         mBottleRack = bottleRack;
         mScannedBottles = new ArrayList<Bottle>();
@@ -43,8 +47,6 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
 //	        	mScannedBottles.add(mBottleRack.getBottle(i));
 //	        }
 //        }
-        mInflator = LayoutInflater.from(context);
-        mResources = resources;
     }
 
     /**
@@ -71,9 +73,16 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
 				// - DONE IN ONITEMCLICK actual GPS information, if given free 
 				// -> TODO: Do we need that earlier?
 				// - get id from webservice or use mac to identify definetly
-				Bottle bottle = new Bottle(
+				
+				// generate new bottle object, when bottle not already in bottlerack
+				// so its getting a new timestamp of found
+				Bottle bottle = mBottleRack.getBottle(device.getAddress());
+				if(bottle == null) {
+					if(DEBUG) Log.e(TAG, "Found new Bottle!");
+					bottle = new Bottle(
 						mScannedBottles.size()+1, device.getName(), device.getAddress());
-				bottle.setColor(mResources.getColor(R.color.black));
+					bottle.setColor(mResources.getColor(R.color.black));
+				}
                 mScannedBottles.add(bottle);
                 return 1;
 			} else {
@@ -85,17 +94,24 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
 		return -1;
     }
 
-    public void addTestBottleToScannedList() {
-    	Bottle bottle = new Bottle(0, "Bottle0");
-		for (int i = 0; i < mScannedBottles.size(); i++) {
+    public void addTestBottleToScannedList(String testMac) {
+    	
+    	Bottle bottle = mBottleRack.getBottle(testMac);
+    	if(bottle == null) {
+			if(DEBUG) Log.e(TAG, "Create new test bottle!");
+    		bottle = new Bottle(0, "Bottle0", testMac);	
+    		bottle.setColor(mResources.getColor(R.color.black));
+    	} else {
+			if(DEBUG) Log.e(TAG, "Test bottle already in bottle rack");
+    	}
+    	
+    	for (int i = 0; i < mScannedBottles.size(); i++) {
 			if (mScannedBottles.get(i).getMac().equals(bottle.getMac())){
-    			Log.e(TAG, "Device already in list!");
         		if(DEBUG) Log.e(TAG, "+++ TestBottle already in list +++");
 				return;
 			}
 		}
 		if(DEBUG) Log.e(TAG, "+++ Add TestBottle to ScannedList +++");
-		bottle.setColor(mResources.getColor(R.color.black));
     	mScannedBottles.add(bottle);
     }
     
@@ -144,11 +160,11 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
             viewHolder.bottleName.setText(R.string.unknown_device);
         }
         // set color of name text to green if known, else leave it black
-        if (mBottleRack.bottleIsKnown(bottle.getMac())) {
-        	bottle.setColor(mResources.getColor(R.color.green));
+//        if (mBottleRack.bottleIsKnown(bottle.getMac())) {
+//        	bottle.setColor(mResources.getColor(R.color.green));
         	viewHolder.bottleName.setTextColor(
         			bottle.getColor());
-        }
+//        }
         viewHolder.bottleAddress.setText(bottle.getMac());
 
         return view;

@@ -44,7 +44,7 @@ import android.widget.Toast;
  */
 public class BottleDetails extends Activity {
 
-	private static final boolean DEBUG = BottleMailConfig.BOTTLE_DETAILS_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = BottleDetails.class.getSimpleName();
 
 //	private Context mContext;

@@ -27,7 +27,7 @@ import uni.leipzig.bm2.config.BottleMailConfig;
  */
 public class SampleGattAttributes {
 	
-	private static final boolean DEBUG = BottleMailConfig.SAMPLE_GATT_DEBUG;	
+	private static final boolean DEBUG = BottleMailConfig.BLE_DEBUG;	
     private final static String TAG = SampleGattAttributes.class.getSimpleName();
     
     private static HashMap<String, String> attributes = new HashMap<String, String>();
