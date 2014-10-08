@@ -23,14 +23,14 @@ public class Bottle implements Parcelable{
 	private double longitude = 12.400581;
 	private double latitude = 51.330117;
 	private int color = 0;
+	private int numberOfMsgsOnBottle;
+	private int numberOfMsgsOnBottleFromWS;
+	private String protocolVersionMajor;
+	private String protocolVersionMinor;
 	
 	//<bmailID,BMailObjekt>
 	private SparseArray<MailContent> bmails = 
 			new SparseArray<MailContent>();
-	private int absoluteTotalNumberOfMsgsOnBottle;
-	private int absoluteTotalNumberOfMsgsOnBottleFromWS;
-	private String protocolVersionMajor;
-	private String protocolVersionMinor;
 
 	public Bottle(int bottleID, String name, String mac){
 		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name, mac) +++");
@@ -131,18 +131,26 @@ public class Bottle implements Parcelable{
 	public void setDeleteDate(String deletedAt) {
 		this.deletedAt = deletedAt;
 	}
+
+	public double getLatitude() {
+		return latitude;
+	}
 	
 	public double getLongitude() {
 		return longitude;
 	}
 	
-	public double getLatitude() {
-		return latitude;
-	}
-	
 	public void setGeoLocation(Location geolocation) {
 		this.longitude = geolocation.getLongitude();
 		this.latitude = geolocation.getLatitude();
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
 	}
 	
 	public int getColor() {
@@ -153,24 +161,24 @@ public class Bottle implements Parcelable{
 		this.color = resourceID;
 	}
 
-	public void setAbsoluteTotalNumberOfMsgsOnBottle(
-			int absoluteTotalNumberOfMsgsOnBottle) {
-		this.absoluteTotalNumberOfMsgsOnBottle = 
-				absoluteTotalNumberOfMsgsOnBottle;
+	public void setNumberOfMsgsOnBottle(
+			int numberOfMsgsOnBottle) {
+		this.numberOfMsgsOnBottle = 
+				numberOfMsgsOnBottle;
 	}
 	
-	public int getAbsoluteTotalNumberOfMsgsOnBottle () {
-		return absoluteTotalNumberOfMsgsOnBottle;
+	public int getNumberOfMsgsOnBottle () {
+		return numberOfMsgsOnBottle;
 	}
 
-	public void setAbsoluteTotalNumberOfMsgsOnBottleFromWS(
-			int absoluteTotalNumberOfMsgsOnBottleFromWS) {
-		this.absoluteTotalNumberOfMsgsOnBottleFromWS = 
-				absoluteTotalNumberOfMsgsOnBottleFromWS;
+	public void setNumberOfMsgsOnBottleFromWS(
+			int numberOfMsgsOnBottleFromWS) {
+		this.numberOfMsgsOnBottleFromWS = 
+				numberOfMsgsOnBottleFromWS;
 	}
 
-	public int setAbsoluteTotalNumberOfMsgsOnBottleFromWS () {
-		return absoluteTotalNumberOfMsgsOnBottleFromWS;
+	public int getNumberOfMsgsOnBottleFromWS () {
+		return numberOfMsgsOnBottleFromWS;
 	}
 
 	public void setProtocolVersionMajor(String protocolVersionMajor) {
@@ -185,7 +193,7 @@ public class Bottle implements Parcelable{
 		this.protocolVersionMinor = protocolVersionMinor;
 	}	
 
-	public String protocolVersionMinor () {
+	public String getProtocolVersionMinor () {
 		return protocolVersionMinor;
 	}
 	

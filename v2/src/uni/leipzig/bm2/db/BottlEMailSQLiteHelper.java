@@ -34,8 +34,8 @@ public class BottlEMailSQLiteHelper extends SQLiteOpenHelper {
     public static final String BOTTLES_COLUMN_LATITUDE = "latitude";
     public static final String BOTTLES_COLUMN_LONGITUDE = "longitude";
     public static final String BOTTLES_COLUMN_COLOR = "color";
-    public static final String BOTTLES_COLUMN_ABSOLUTETOTALNUMBEROFMSGSONBOTTLE = "absoluteTotalNumberOfMsgsOnBottle";
-    public static final String BOTTLES_COLUMN_ABSOLUTETOTALNUMBEROFMSGSONBOTTLEFROMWS = "absoluteTotalNumberOfMsgsOnBottleFromWS";
+    public static final String BOTTLES_COLUMN_NUMBEROFMSGSONBOTTLE = "absoluteTotalNumberOfMsgsOnBottle";
+    public static final String BOTTLES_COLUMN_NUMBEROFMSGSONBOTTLEFROMWS = "absoluteTotalNumberOfMsgsOnBottleFromWS";
     public static final String BOTTLES_COLUMN_PROTOCOLVERSIONMAJOR = "protocolVersionMajor";
     public static final String BOTTLES_COLUMN_PROTOCOLVERSIONMINOR = "protocolVersionMinor";
     
@@ -66,8 +66,8 @@ public class BottlEMailSQLiteHelper extends SQLiteOpenHelper {
         + BOTTLES_COLUMN_LATITUDE + " text not null, " 
         + BOTTLES_COLUMN_LONGITUDE + " text not null, " 
         + BOTTLES_COLUMN_COLOR + " integer not null, " 
-        + BOTTLES_COLUMN_ABSOLUTETOTALNUMBEROFMSGSONBOTTLE + " integer, " 
-        + BOTTLES_COLUMN_ABSOLUTETOTALNUMBEROFMSGSONBOTTLEFROMWS + " integer, " 
+        + BOTTLES_COLUMN_NUMBEROFMSGSONBOTTLE + " integer, " 
+        + BOTTLES_COLUMN_NUMBEROFMSGSONBOTTLEFROMWS + " integer, " 
         + BOTTLES_COLUMN_PROTOCOLVERSIONMAJOR + " integer, "
         + BOTTLES_COLUMN_PROTOCOLVERSIONMINOR + " integer )";
 
