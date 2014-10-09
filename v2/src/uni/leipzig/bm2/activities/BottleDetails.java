@@ -24,7 +24,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -74,6 +76,18 @@ public class BottleDetails extends Activity {
 	public static final String SHOW_MESSAGES = 
 			"uni.leipzig.bm2.activities.SHOW_MESSAGES";
 
+    private static final int MSG_PROGRESS = 201;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			BluetoothGattCharacteristic characteristic;
+			Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
+		}
+	};
+	
+	private static boolean faker = false;
+	
+    
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -198,7 +212,7 @@ public class BottleDetails extends Activity {
 			((TextView) findViewById(R.id.tv_mac_value))
 			.setText(mDeviceAddress);
 		}
-
+		
 		assureInternetConnection();
 
 		if( !mDeviceAddress.equals("ca:fe:ca:fe:ca:fe") ) {
@@ -221,6 +235,7 @@ public class BottleDetails extends Activity {
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            mHandler.sendMessage(Message.obtain(null, MSG_PROGRESS, "Connecting to "+mDeviceName+"..."));
             Log.d(TAG, "Connect request result=" + result);
         }
     }
@@ -406,7 +421,16 @@ public class BottleDetails extends Activity {
 	public void sendMessage(View view) {
         if(DEBUG) Log.e(TAG,"+++ sendMessage +++");
 		
-		//TODO
+        mHandler.sendMessage(Message.obtain(null, 201, mDeviceAddress));
+
+        if(mBluetoothLeService != null) {
+	        if (!faker) {
+	        	mBluetoothLeService.testWriteDataToAllDescriptors();
+	        	faker = true;
+	        } else 
+	        	mBluetoothLeService.testWriteDataToAllCharacteristics();
+        }
+        //TODO
 		//connect to bluetooth device
 		//send message
 		//if sending was okay

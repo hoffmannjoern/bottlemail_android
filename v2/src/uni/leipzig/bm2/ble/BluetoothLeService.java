@@ -16,6 +16,7 @@
 
 package uni.leipzig.bm2.ble;
 
+import java.text.Format;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,8 +68,8 @@ public class BluetoothLeService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
-    public final static UUID UUID_BOTTLE_HELLO = 
-    		UUID.fromString(SampleGattAttributes.BMAIL_HELLO);
+    public final static UUID UUID_DEVICE_NAME = 
+    		UUID.fromString(SampleGattAttributes.DEVICE_NAME);
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
@@ -126,6 +127,43 @@ public class BluetoothLeService extends Service {
     		
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
+        
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+//        	characteristic = gatt.getService(UUID_DEVICE_NAME).getCharacteristic(UUID_DEVICE_NAME);
+        	String deviceName = gatt.getDevice().getName();
+        	String serviceName = characteristic.getService().getUuid().toString();
+        	String charName = characteristic.getUuid().toString();
+        	String value = characteristic.getStringValue(0);
+        	
+        	int props = characteristic.getProperties();
+        	String propertiesString = String.format("0x%04X ", props);
+        	if((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0) propertiesString += "read ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) propertiesString += "write ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) propertiesString += "notify ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) propertiesString += "indicate ";
+        	
+        	Log.e(TAG, deviceName + " | " + serviceName + " | " + charName + " | " + value + " | " + propertiesString);
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor desc, int status) {
+//        	characteristic = gatt.getService(UUID_DEVICE_NAME).getCharacteristic(UUID_DEVICE_NAME);
+        	String deviceName = gatt.getDevice().getName();
+        	String serviceName = desc.getCharacteristic().getService().getUuid().toString();
+        	String charName = desc.getCharacteristic().getUuid().toString();
+        	String descName = desc.getUuid().toString();
+        	String value = desc.getValue().toString();
+        	
+        	int props = desc.getCharacteristic().getProperties();
+        	String propertiesString = String.format("0x%04X ", props);
+        	if((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0) propertiesString += "read ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) propertiesString += "write ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) propertiesString += "notify ";
+        	if((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) propertiesString += "indicate ";
+        	
+        	Log.e(TAG, deviceName + " | " + serviceName + " | " + charName + " | " + descName + " | " + value + " | " + propertiesString);
+        }
     };
 
     private void broadcastUpdate(final String action) {
@@ -145,7 +183,7 @@ public class BluetoothLeService extends Service {
         // carried out as per profile specifications:
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?
         // u=org.bluetooth.characteristic.heart_rate_measurement.xml
-        if (UUID_BOTTLE_HELLO.equals(characteristic.getUuid())) {
+        if (UUID_DEVICE_NAME.equals(characteristic.getUuid())) {
         	// For BottleMail-Helloworld-Profile
         	final byte[] bmData = characteristic.getValue();
         	if ( bmData != null && bmData.length > 0 ) {
@@ -348,7 +386,7 @@ public class BluetoothLeService extends Service {
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBluetoothGatt.writeDescriptor(descriptor);
-        } else if (UUID_BOTTLE_HELLO .equals(characteristic.getUuid())){
+        } else if (UUID_DEVICE_NAME .equals(characteristic.getUuid())){
 //        	BluetoothGattDescriptor bmDescriptor = characteristic.getDescriptor(
 //        			UUID.fromString(SampleGattAttributes.BMAIL_CONFIG_DESCRIPTOR));
 //        	bmDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -368,5 +406,51 @@ public class BluetoothLeService extends Service {
         
         if (mBluetoothGatt == null) return null;
         return mBluetoothGatt.getServices();
+    }
+    
+    public void testWriteDataToAllCharacteristics () {
+		if(DEBUG) Log.e(TAG, "+++ testWriteDataToAllCharacteristics +++");
+        
+		// read / notify
+		BluetoothGattCharacteristic chara = mBluetoothGatt.getService(
+				UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")).
+				getCharacteristic(UUID.fromString(SampleGattAttributes.TEMPERATURE));
+		mBluetoothGatt.setCharacteristicNotification(chara, true);
+		
+		String blubb = new String("Blubb");
+		chara.setValue(blubb.getBytes());
+		mBluetoothGatt.writeCharacteristic(chara);
+
+		// does not write back
+		chara = mBluetoothGatt.getService(
+				UUID.fromString("00001801-0000-1000-8000-00805f9b34fb")).
+				getCharacteristic(UUID.fromString(SampleGattAttributes.SERVICE_CHANGED));
+		mBluetoothGatt.setCharacteristicNotification(chara, true);
+		chara.setValue(blubb.getBytes());
+		mBluetoothGatt.writeCharacteristic(chara);
+		
+		// only 2a02 and 2a03 are responsing with read/write properties
+    	List<BluetoothGattCharacteristic> charas = mBluetoothGatt.getService(UUID.fromString("00001800-0000-1000-8000-00805f9b34fb")).getCharacteristics();
+    	for (BluetoothGattCharacteristic ch : charas) {
+    		mBluetoothGatt.setCharacteristicNotification(chara, true);
+    		ch.setValue(blubb.getBytes());
+    		mBluetoothGatt.writeCharacteristic(ch);
+    	}
+    }
+
+    public void testWriteDataToAllDescriptors () {
+		if(DEBUG) Log.e(TAG, "+++ testWriteDataToAllDescriptors +++");
+        
+    	BluetoothGattCharacteristic chara = mBluetoothGatt.getService(
+				UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")).
+				getCharacteristic(UUID.fromString(SampleGattAttributes.TEMPERATURE));
+    	List<BluetoothGattDescriptor> descris = chara.getDescriptors();
+		mBluetoothGatt.setCharacteristicNotification(chara, true);
+		
+		String blubb = new String("Blubb");
+		for (BluetoothGattDescriptor desc : descris) {
+			desc.setValue(blubb.getBytes());
+	    	mBluetoothGatt.writeDescriptor(desc);
+		}
     }
 }
