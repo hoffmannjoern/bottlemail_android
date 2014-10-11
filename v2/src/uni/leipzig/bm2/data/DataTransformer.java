@@ -45,14 +45,14 @@ public class DataTransformer {
 		//Calendar timestamp = Calendar.getInstance();
 		
 		
-		long datum = getDateAsLong(bMail.getTimestamp());
+//		long datum = getDateAsLong(bMail.getTimestamp());
 		
 		ArrayList<byte[]> headerTeile = new ArrayList<byte[]>();
 		
 		//1
 		headerTeile.add(statusBitHeader.getBytes());
 		//8
-		headerTeile.add(longToByteArray(datum));
+//		headerTeile.add(longToByteArray(datum));
 		//2
 		headerTeile.add(charToByteArray(authorLength));
 		//2

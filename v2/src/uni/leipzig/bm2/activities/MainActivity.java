@@ -24,6 +24,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceFragment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -348,6 +349,16 @@ public class MainActivity extends ListActivity {
         // Set location to Bottleobject
         // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
         // maybe decide for only one provider
+		// TODO: precision problem at example "Sternburg Brauerei Leipzig"
+		// 51.330308,12.400882 -> 6 after point -> extremely concrete
+		// 51.3303,12.4008 -> right street "Mühlstraße"
+		// 51.330,12.400 -> nothing happens
+		// 51.33,12.40 -> near right street "Mühlstraße"
+		// 51.3,12.4 -> city ("Leipzig/Lössnig")
+		// 51.0,12.0 -> region (in corner between "Zeitz, Gera, Eisenberg")
+		// 50.0,10.0 -> right country -> "Würzburg/FFM"
+		// useful options for precision settings should be:
+		// country (10.0 precise), region (11.0 precise), city (11.1 pr.), street(11.11 pr.), exactly (11.111111 pr.)
         if (mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!=null) {
         	bottle.setGeoLocation(mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
         } else { 
@@ -383,5 +394,13 @@ public class MainActivity extends ListActivity {
 
         startActivity(intent);
     }
+    
+//    public static class MainSettingsFragment extends PreferenceFragment {
+//    	@Override
+//    	public void onCreate(Bundle savedInstanceState) {
+//    		super.onCreate(savedInstanceState);
+//    		addPreferencesFromResource(R.xml.preferences);
+//    	}
+//    }
 
 }
