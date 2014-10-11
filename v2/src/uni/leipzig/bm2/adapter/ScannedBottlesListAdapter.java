@@ -80,7 +80,7 @@ public class ScannedBottlesListAdapter extends BaseAdapter {
 				if(bottle == null) {
 					if(DEBUG) Log.e(TAG, "Found new Bottle!");
 					bottle = new Bottle(
-						mScannedBottles.size()+1, device.getName(), device.getAddress());
+						mScannedBottles.size()+1, mResources.getString(R.string.unknown_device) +" - "+ device.getName(), device.getAddress());
 					bottle.setColor(mResources.getColor(R.color.black));
 				}
                 mScannedBottles.add(bottle);

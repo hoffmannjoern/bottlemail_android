@@ -35,6 +35,8 @@ public class MainActivity extends ListActivity {
 	
 	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
+    
+    private static MenuItem scanItem = null;
 
     // Memory-Handling
     //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory
@@ -161,11 +163,16 @@ public class MainActivity extends ListActivity {
 		if(DEBUG) Log.e(TAG, "+++ onCreateOptionsMenu +++");
 		
         getMenuInflater().inflate(R.menu.main, menu);
-            menu.findItem(R.id.menu_stop).setVisible(true);
-        if(DEBUG)
+        scanItem = menu.findItem(R.id.menu_scan);
+        menu.findItem(R.id.menu_stop).setVisible(true);
+        
+        if(DEBUG) {
         	menu.findItem(R.id.menu_test).setVisible(true);
-        else
+        	menu.findItem(R.id.menu_createBottle).setVisible(true);
+        } else {
         	menu.findItem(R.id.menu_test).setVisible(false);
+        	menu.findItem(R.id.menu_createBottle).setVisible(false);
+        }
         return true;
     }
 
@@ -175,6 +182,7 @@ public class MainActivity extends ListActivity {
 
         switch (item.getItemId()) {
             case R.id.menu_scan:
+            	item.setVisible(false);
                 mScannedBottlesListAdapter.clear();
                 scanLeDevice(true);
         		mLocationManager.requestLocationUpdates(
@@ -275,16 +283,22 @@ public class MainActivity extends ListActivity {
                 @Override
                 public void run() {
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    setProgressBarIndeterminateVisibility(false);
+                    setLoadIconByHidingScanButtonIfTrue(false);
                 }
             }, SCAN_PERIOD_BLE);
 
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-            setProgressBarIndeterminateVisibility(true);
+            setLoadIconByHidingScanButtonIfTrue(true);
         } else {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            setProgressBarIndeterminateVisibility(false);
+            setLoadIconByHidingScanButtonIfTrue(false);
         }
+    }
+    
+    private void setLoadIconByHidingScanButtonIfTrue(boolean setLoad) {
+    	if (scanItem != null)
+    		scanItem.setVisible(!setLoad);
+    	setProgressBarIndeterminateVisibility(setLoad);
     }
     
     // Device scan callback.
