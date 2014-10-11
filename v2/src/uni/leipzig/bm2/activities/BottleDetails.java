@@ -84,9 +84,6 @@ public class BottleDetails extends Activity {
 			Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
 		}
 	};
-	
-	private static boolean faker = false;
-	
     
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -424,11 +421,8 @@ public class BottleDetails extends Activity {
         mHandler.sendMessage(Message.obtain(null, 201, mDeviceAddress));
 
         if(mBluetoothLeService != null) {
-	        if (!faker) {
-	        	mBluetoothLeService.testWriteDataToAllDescriptors();
-	        	faker = true;
-	        } else 
-	        	mBluetoothLeService.testWriteDataToAllCharacteristics();
+//        	mBluetoothLeService.testWriteDataToAllCharacteristics();
+        	mBluetoothLeService.testWriteDataToBottlEmailCharacteristic("Test");
         }
         //TODO
 		//connect to bluetooth device
