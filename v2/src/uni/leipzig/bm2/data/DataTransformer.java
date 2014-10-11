@@ -3,18 +3,31 @@ package uni.leipzig.bm2.data;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Formatter;
 
+import uni.leipzig.bm2.config.BottleMailConfig;
 import android.util.Log;
 
 public class DataTransformer {
-	
+
+	private static final boolean DEBUG = BottleMailConfig.DATA_DEBUG;	
+    private final static String TAG = DataTransformer.class.getSimpleName();
+    
 	final String statusBitHeader = "T";
-	final String TAG = "DataTransformer";
 	final String DC3_TAG = "###";
+	
+	public static String getUnixTimestampWithCurrentTime () {
+		if(DEBUG) Log.e(TAG, "+++ getUnixTimestampWithCurrentTime +++");
+		
+    	Date date = new Date();
+    	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    	return sdf.format(date).toString();
+	}
 	
 	byte[] makeHeader(BMail bMail){
 		//2 byte

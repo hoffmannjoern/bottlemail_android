@@ -1,11 +1,13 @@
 package uni.leipzig.bm2.activities;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import uni.leipzig.bm2.adapter.ScannedBottlesListAdapter;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
+import uni.leipzig.bm2.data.DataTransformer;
 import uni.leipzig.bottlemail2.R;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -359,12 +361,16 @@ public class MainActivity extends ListActivity {
         // add bottle to bottlerack, if it is not there 
         if( (mBottleRack.addBottleToRack(bottle)) == true) {
         	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
+        	
     		// Set found timestamp to NOW -> the moment of clicking first
-    		bottle.setFoundDate(Calendar.getInstance().toString());
+        	bottle.setFoundDate(DataTransformer.getUnixTimestampWithCurrentTime());//Calendar.getInstance().getTime().toString());
+    		if(DEBUG) Log.d(TAG, bottle.getFoundDate());
+    		
     		//TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
             // - actual the getView 
             bottle.setColor(getResources().getColor(R.color.green));
-    		mScannedBottlesListAdapter.notifyDataSetChanged();
+    		
+            mScannedBottlesListAdapter.notifyDataSetChanged();
         } else {
         	if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
         }        

@@ -29,8 +29,8 @@ public class Bottle implements Parcelable{
 	private String protocolVersionMinor;
 	
 	//<bmailID,BMailObjekt>
-	private SparseArray<MailContent> bmails = 
-			new SparseArray<MailContent>();
+	private SparseArray<BMail> bmails = 
+			new SparseArray<BMail>();
 
 	public Bottle(int bottleID, String name, String mac){
 		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name, mac) +++");
@@ -198,7 +198,7 @@ public class Bottle implements Parcelable{
 	}
 	
 	
-	public MailContent createNewBMail(int mID, String txt, 
+	public BMail createNewBMail(int mID, String txt, 
 			String author, Calendar tStamp, boolean isDel) throws Exception{
 		if(DEBUG) Log.e(TAG, "+++ createNewBMail +++");
 		
@@ -207,7 +207,7 @@ public class Bottle implements Parcelable{
 			throw new Exception("message already exists");	
 		}
 		else{
-			MailContent mail = new MailContent(
+			BMail mail = new BMail(
 					mID, txt, author, tStamp, isDel);
 			bmails.put(mail.getBmailID(), mail);
 			return mail;
@@ -215,7 +215,7 @@ public class Bottle implements Parcelable{
 		
 	}
 	
-	public MailContent getBMail(int id){
+	public BMail getBMail(int id){
 		if(DEBUG) Log.e(TAG, "+++ getBMail +++");
 		
 		return bmails.get(id);
@@ -225,10 +225,10 @@ public class Bottle implements Parcelable{
 	//wird erst aufgerufen, wenn Nachrichten 
 	//erfolgreich von Modul geloescht wurden
 	public void deleteMessagesFromBottle(
-			SparseArray<MailContent> messagesToDelete){
+			SparseArray<BMail> messagesToDelete){
 		if(DEBUG) Log.e(TAG, "+++ deleteMessagesFromBottle +++");
 		
-		MailContent bMail = null;
+		BMail bMail = null;
 		
 		for(int i = 0; i< messagesToDelete.size();i++){
 			
@@ -241,7 +241,7 @@ public class Bottle implements Parcelable{
 	}
 
 	//TODO: Mail an Webservice und Bluetooth senden
-	public void sendMessage(MailContent msg){
+	public void sendMessage(BMail msg){
 		if(DEBUG) Log.e(TAG, "+++ sendMessage +++");
 				
 		//msg.setBmailID(this.absoluteTotalNumberOfMsgsOnBottle+1);

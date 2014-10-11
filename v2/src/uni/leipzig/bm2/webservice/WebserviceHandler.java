@@ -2,6 +2,8 @@ package uni.leipzig.bm2.webservice;
 
 import java.util.ArrayList;
 
+import org.json.JSONObject;
+
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.BMail;
 import uni.leipzig.bm2.data.Bottle;
@@ -23,6 +25,8 @@ public class WebserviceHandler {
         //String mac = bottle.getMac();
         //int type = 1; //1 - normal, 2 - twitter
         //String name = bottle.getName(); //optional
+        
+        JSONObject json = new JSONObject();
         
         if(DEBUG) Log.e(TAG, "Failed to create bottle");
 		return -1;

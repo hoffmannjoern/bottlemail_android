@@ -32,6 +32,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -421,8 +422,10 @@ public class BottleDetails extends Activity {
         mHandler.sendMessage(Message.obtain(null, 201, mDeviceAddress));
 
         if(mBluetoothLeService != null) {
+        	EditText edittext = (EditText) findViewById(R.id.et_message);
 //        	mBluetoothLeService.testWriteDataToAllCharacteristics();
-        	mBluetoothLeService.testWriteDataToBottlEmailCharacteristic("Test");
+        	mBluetoothLeService.writeDataToBottlEmailCharacteristic(
+        			edittext.getText().toString());
         }
         //TODO
 		//connect to bluetooth device

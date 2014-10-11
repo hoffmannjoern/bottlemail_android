@@ -438,7 +438,7 @@ public class BluetoothLeService extends Service {
         return mBluetoothGatt.getServices();
     }
     
-    public void testWriteDataToBottlEmailCharacteristic(String data) {
+    public void writeDataToBottlEmailCharacteristic(String data) {
 		if(DEBUG) Log.e(TAG, "+++ testWriteDataToBottlEmailCharacteristic +++");
 		
     	BluetoothGattCharacteristic chara = 

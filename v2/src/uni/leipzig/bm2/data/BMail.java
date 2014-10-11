@@ -1,14 +1,20 @@
 package uni.leipzig.bm2.data;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import uni.leipzig.bm2.config.BottleMailConfig;
 import android.location.Location;
 
 public class BMail {
+
+	private static final boolean DEBUG = BottleMailConfig.DATA_DEBUG;	
+    private final static String TAG = BMail.class.getSimpleName();
+
+	//TODO just copied from Version1 
+	// -> old name: BMail changed to MailContent
+	
 	//evtl. BottleObjekt 
 	private int bmailID;
 	private String text;
@@ -24,7 +30,8 @@ public class BMail {
 	}
 
 	//Kontruktor für Webservice
-	public BMail(int mID, String txt, String author, Calendar tStamp, boolean isDel) throws JSONException{
+	public BMail(int mID, String txt, String author, 
+			Calendar tStamp, boolean isDel) throws JSONException{
 		
 		this.bmailID = mID;
 		this.text = txt;
@@ -41,7 +48,7 @@ public class BMail {
 		
 		this.bmailID = mID;
 		this.text = txt;
-		this.timestamp =tStamp;
+		this.timestamp = tStamp;
 	}
 
 	public int getBmailID() {
