@@ -3,14 +3,17 @@ package uni.leipzig.bm2.config;
 public class AppUtilities {
 	
 	private static AppUtilities appUtils = new AppUtilities();
-	private String mServerUrl = null;
-	private double mAppVersion = 0;
-	private String mAppVersionName = null;
+	//private String mServerUrl = null;
+	private String mServerBottleUrl;
+	private String mServerMessageUrl;
+	private double mAppVersion;
+	private String mAppVersionName;
 	
 	private AppUtilities(){
 		
-		//TODO: aus Datenbank oder config-Datei einlesen
-		this.mServerUrl = "http://tipc011.informatik.uni-leipzig.de/bmwebservice/";
+		//this.mServerUrl = "http://tipc011.informatik.uni-leipzig.de/bmwebservice/";
+		this.mServerBottleUrl = "bottlemail.gurkware.de/API/bottle/";
+		this.mServerMessageUrl = "bottlemail.gurkware.de/API/message/";
 		this.mAppVersion = 2.0;
 		this.mAppVersionName = "Bottager";//"Flaschenkind";
 	}
@@ -19,8 +22,16 @@ public class AppUtilities {
 		return appUtils;
 	}
 	
-	public String getServerUrl () {
-		return this.mServerUrl;
+//	public String getServerUrl () {
+//		return this.mServerUrl;
+//	}
+
+	public String getServerBottleUrl () {
+		return this.mServerBottleUrl;
+	}
+
+	public String getServerMessageUrl () {
+		return this.mServerMessageUrl;
 	}
 
 	public double getAppVersion() {

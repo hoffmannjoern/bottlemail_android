@@ -1,4 +1,4 @@
-package uni.leipzig.bm2.config;
+package uni.leipzig.bm2.unused;
 
 public class UserUtilities {
 	
