@@ -55,13 +55,18 @@
     
     <string name="menu_get">Hole mehr!</string>
     
-    <!-- MessageActivity strings -->
+    <!-- SettingsActivity strings -->
     <string name="title_activity_settings">Einstellungen</string>
-    	<!-- Preferences items -->
+    	<!-- Precision preferences items -->
     <string name="pref_prec_dialogtitle">Precision</string>
     <string name="pref_prec_def">Exactly</string>
     <string name="pref_prec_summary">Select your precision of localization.</string>
     <string name="pref_prec_title">Select your precision</string>
+    	<!-- Username preferences items -->
+    <string name="pref_user_dialogtitle">Username</string>
+    <string name="pref_user_def">Sterni</string>
+    <string name="pref_user_title">Username</string>
+    <string name="pref_user_summary">Please put in your username.</string>
 
     <string-array name="pref_prec_array">
         <item>Exactly</item>

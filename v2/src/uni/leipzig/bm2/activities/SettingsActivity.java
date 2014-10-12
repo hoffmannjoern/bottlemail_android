@@ -4,6 +4,7 @@ import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bottlemail2.R;
 import android.app.Activity;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -23,6 +24,7 @@ public class SettingsActivity extends Activity implements OnPreferenceChangeList
 		if(DEBUG) Log.e(TAG, "+++ onCreate +++");
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+		//setContentView(R.layout.activity_settings);
 		
     	getFragmentManager().beginTransaction().replace(
     			android.R.id.content, new MainSettingsFragment()).commit();
@@ -72,8 +74,10 @@ public class SettingsActivity extends Activity implements OnPreferenceChangeList
 				}
 			};
 			
-			ListPreference p = (ListPreference) getPreferenceManager().findPreference("precision_preference");
-			p.setOnPreferenceChangeListener(onPreferenceChangeListener);
+			ListPreference listPref = (ListPreference) getPreferenceManager().findPreference("precision_preference");
+			listPref.setOnPreferenceChangeListener(onPreferenceChangeListener);
+			EditTextPreference editPref = (EditTextPreference) getPreferenceManager().findPreference("username_preference");
+			editPref.setOnPreferenceChangeListener(onPreferenceChangeListener);
     	}  
     }
 
