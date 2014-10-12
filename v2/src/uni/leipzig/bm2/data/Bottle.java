@@ -1,13 +1,13 @@
 package uni.leipzig.bm2.data;
 
-import java.util.Calendar;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import uni.leipzig.bm2.config.BottleMailConfig;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-import android.util.SparseArray;
 
 public class Bottle implements Parcelable{
 
@@ -20,17 +20,17 @@ public class Bottle implements Parcelable{
 	private String foundDate = null;
 	private String deletedAt = null;
 	// Standard geo-location: Sternburg Brauerei Leipzig 
-	private double longitude = 12.400581;
 	private double latitude = 51.330117;
+	private double longitude = 12.400581;
 	private int color = 0;
 	private int numberOfMsgsOnBottle;
 	private int numberOfMsgsOnBottleFromWS;
 	private String protocolVersionMajor;
 	private String protocolVersionMinor;
 	
-	//<bmailID,BMailObjekt>
-	private SparseArray<BMail> bmails = 
-			new SparseArray<BMail>();
+//	//<bmailID,BMailObjekt>
+//	private SparseArray<BMail> bmails = 
+//			new SparseArray<BMail>();
 
 	public Bottle(int bottleID, String name, String mac){
 		if(DEBUG) Log.e(TAG, "+++ Constructor(id, name, mac) +++");
@@ -92,6 +92,30 @@ public class Bottle implements Parcelable{
 			return new Bottle[size]; 
 		} 
 	};
+
+	public JSONObject writeJSONNewBottle(String mac, int type, String name) {
+		if(DEBUG) Log.e(TAG, "+++ writeJSONNewBottle +++");
+		
+		JSONObject object = new JSONObject();
+		try {
+			object.put("cpuid", mac);
+			object.put("type", type);
+			if (name != "")
+				object.put("name", name);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		System.out.println(object);
+		
+		return object;
+	}
+	
+	public Bottle readJSONGetBottle (JSONObject object) {
+		if(DEBUG) Log.e(TAG, "+++ readJSONGetBottle +++");
+		
+		return null;
+	}
+	
 	public int getBottleID() {
 		return bottleID;
 	}
@@ -140,11 +164,42 @@ public class Bottle implements Parcelable{
 		return longitude;
 	}
 	
-	public void setGeoLocation(Location geolocation) {
-		this.longitude = geolocation.getLongitude();
-		this.latitude = geolocation.getLatitude();
+	public void setGeoLocation(Location geolocation, int precision) {
+		if (precision == -1) {
+			// TODO: do not set a real position
+			// actually its 0,0, so its in atlantic ocean,
+			// do we want to set a default like Sternburg Brauerei?
+			this.latitude = 0;
+			this.longitude = 0;
+		} else if (precision == 10) {
+			// set location so that there is only 10th precision (128.36 -> 120.0)
+			this.latitude = Double.valueOf(
+					(int) geolocation.getLatitude() 
+					- (((int) geolocation.getLatitude()) % 10));
+			this.longitude = Double.valueOf(
+					(int) geolocation.getLongitude() 
+					- (((int) geolocation.getLongitude()) % 10));
+		} else if (precision == 6) {
+			// set absolute precise location with 6 digits after point-notation
+			// that's the default precision of location object, so that state is just 
+			// faster than the next, although it fits in there, too.
+			this.latitude = geolocation.getLatitude();
+			this.longitude = geolocation.getLongitude();
+		} else {
+			// that is an evil and very very sad hack to use users precision wish
+			// geolocation.getLatitude() but with with precision -> 
+			// 1. double to String with bind of precision value, 
+			// 2. replace german-like "," through readable "." notation
+			// 3. convert String back to double value
+			this.latitude = Double.valueOf(
+					String.format("%."+precision+"f", 
+							geolocation.getLatitude()).replace(",", ".")); 
+			this.longitude = Double.valueOf(
+					String.format("%."+precision+"f", 
+							geolocation.getLongitude()).replace(",", "."));
+		}
 	}
-
+	
 	public void setLatitude(double latitude) {
 		this.latitude = latitude;
 	}
@@ -198,59 +253,59 @@ public class Bottle implements Parcelable{
 	}
 	
 	
-	public BMail createNewBMail(int mID, String txt, 
-			String author, Calendar tStamp, boolean isDel) throws Exception{
-		if(DEBUG) Log.e(TAG, "+++ createNewBMail +++");
-		
-		if(bMailExists(mID)){
-			//TODO: doppelte Nachrichten
-			throw new Exception("message already exists");	
-		}
-		else{
-			BMail mail = new BMail(
-					mID, txt, author, tStamp, isDel);
-			bmails.put(mail.getBmailID(), mail);
-			return mail;
-		}
-		
-	}
-	
-	public BMail getBMail(int id){
-		if(DEBUG) Log.e(TAG, "+++ getBMail +++");
-		
-		return bmails.get(id);
-	}
+//	public BMail createNewBMail(int mID, String txt, 
+//			String author, Calendar tStamp, boolean isDel) throws Exception{
+//		if(DEBUG) Log.e(TAG, "+++ createNewBMail +++");
+//		
+//		if(bMailExists(mID)){
+//			//TODO: doppelte Nachrichten
+//			throw new Exception("message already exists");	
+//		}
+//		else{
+//			BMail mail = new BMail(
+//					mID, txt, author, tStamp, isDel);
+//			bmails.put(mail.getBmailID(), mail);
+//			return mail;
+//		}
+//		
+//	}
+//	
+//	public BMail getBMail(int id){
+//		if(DEBUG) Log.e(TAG, "+++ getBMail +++");
+//		
+//		return bmails.get(id);
+//	}
+//
+//	//loescht Nachrichten von Bottle in App
+//	//wird erst aufgerufen, wenn Nachrichten 
+//	//erfolgreich von Modul geloescht wurden
+//	public void deleteMessagesFromBottle(
+//			SparseArray<BMail> messagesToDelete){
+//		if(DEBUG) Log.e(TAG, "+++ deleteMessagesFromBottle +++");
+//		
+//		BMail bMail = null;
+//		
+//		for(int i = 0; i< messagesToDelete.size();i++){
+//			
+//			bMail = messagesToDelete.valueAt(i);
+//			bMail.setText("Message deleted!");
+//						
+//			this.bmails.put(messagesToDelete.keyAt(i), bMail);
+//		}
+//		
+//	}
 
-	//loescht Nachrichten von Bottle in App
-	//wird erst aufgerufen, wenn Nachrichten 
-	//erfolgreich von Modul geloescht wurden
-	public void deleteMessagesFromBottle(
-			SparseArray<BMail> messagesToDelete){
-		if(DEBUG) Log.e(TAG, "+++ deleteMessagesFromBottle +++");
-		
-		BMail bMail = null;
-		
-		for(int i = 0; i< messagesToDelete.size();i++){
-			
-			bMail = messagesToDelete.valueAt(i);
-			bMail.setText("Message deleted!");
-						
-			this.bmails.put(messagesToDelete.keyAt(i), bMail);
-		}
-		
-	}
-
-	//TODO: Mail an Webservice und Bluetooth senden
-	public void sendMessage(BMail msg){
-		if(DEBUG) Log.e(TAG, "+++ sendMessage +++");
-				
-		//msg.setBmailID(this.absoluteTotalNumberOfMsgsOnBottle+1);
-	}
-	
-	public boolean bMailExists(int mID){
-		if(DEBUG) Log.e(TAG, "+++ bMailExists +++");
-		
-		return (this.bmails.indexOfKey(mID) >= 0);			
-	}
+//	//TODO: Mail an Webservice und Bluetooth senden
+//	public void sendMessage(BMail msg){
+//		if(DEBUG) Log.e(TAG, "+++ sendMessage +++");
+//				
+//		//msg.setBmailID(this.absoluteTotalNumberOfMsgsOnBottle+1);
+//	}
+//	
+//	public boolean bMailExists(int mID){
+//		if(DEBUG) Log.e(TAG, "+++ bMailExists +++");
+//		
+//		return (this.bmails.indexOfKey(mID) >= 0);			
+//	}
 
 }

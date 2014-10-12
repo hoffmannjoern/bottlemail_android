@@ -1,12 +1,14 @@
 package uni.leipzig.bm2.data;
 
-import java.util.Calendar;
+import java.util.ArrayList;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import uni.leipzig.bm2.config.BottleMailConfig;
 import android.location.Location;
 import android.util.Base64;
+import android.util.Log;
 
 public class BMail {
 
@@ -22,15 +24,16 @@ public class BMail {
 	private String text;
 	private String timestamp = DataTransformer.getUnixTimestampWithCurrentTime();
 	private Base64 image = null;
-	private String author;
-	private double latitude;
-	private double longitude;
+	private String author = "";
+	private double latitude = 51.330117;
+	private double longitude = 12.400581;
 	private boolean isDeleted = false;
 	
 	
 	//Kontruktor für Webservice
 	public BMail(int mID, String txt, String author, 
 			String tStamp, Location geoLocation, boolean isDel) throws JSONException{
+		if(DEBUG) Log.e(TAG, "+++ Constructor(mID, txt, author, tStamp, geoLocation, isDel) +++");
 		
 		this.bmailID = mID;
 		//TODO: What about title of message?
@@ -40,11 +43,12 @@ public class BMail {
 		this.author = author;
 		this.latitude = geoLocation.getLatitude();	
 		this.longitude = geoLocation.getLongitude();	
-		this.isDeleted = isDel;	
 	}
 	
 	//Konstruktor für BluetoothGruppe
 	public BMail(int mID, String txt, String tStamp){
+		if(DEBUG) Log.e(TAG, "+++ Constructor(mID, txt, tStamp) +++");
+		
 		
 		this.bmailID = mID;
 		this.text = txt;
@@ -107,5 +111,39 @@ public class BMail {
 				+ ", author=" + author + ", latitude=" + latitude + ", longitude=" + longitude 
 				+ ", isDeleted=" + isDeleted + "]";
 	}
+    
+	public JSONObject writeJSONAddMessage(BMail bmail) {
+		if(DEBUG) Log.e(TAG, "+++ writeJSONAddMessage +++");
+		
+		JSONObject object = new JSONObject();
+		try {
+			object.put("message", bmail.getText());
+			// TODO: Calender to string of format "Y-m-d H:i:s"
+			object.put("date", bmail.getTimestamp());
+			//TODO: put image
+			object.put("user", bmail.getAuthor());
+			object.put("latitude", bmail.getLatitude());
+			object.put("longitude", bmail.getLongitude());
+			//TODO: should we give an explicit precsision 
+			// or implicit by giving location with only that precise data
+			//object.put("precision", SETPRECISION);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		System.out.println(object);
+		
+		return object;
+	}
+	
+	public BMail readJSONGetMessageJSON(JSONObject object) {
+		if(DEBUG) Log.e(TAG, "+++ readJSONGetMessageJSON +++");
+		
+		return null;
+	}
 
+	public ArrayList<BMail> readJSONGetMessagesJSON(JSONObject object) {
+		if(DEBUG) Log.e(TAG, "+++ readJSONGetMessageJSON +++");
+		
+		return null;
+	}
 }

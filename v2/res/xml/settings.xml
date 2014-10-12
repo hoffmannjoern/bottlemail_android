@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/pref_prec_title">
+        <ListPreference 
+            android:defaultValue="@string/pref_prec_def"
+            android:dialogTitle="@string/pref_prec_dialogtitle"
+            android:entries="@array/pref_prec_array"
+            android:entryValues="@array/pref_prec_array_values"
+            android:key="precision_preference"
+            android:summary="@string/pref_prec_summary"
+            android:title="@string/pref_prec_title"/>
+        
+    </PreferenceCategory>
+    
+    
+</PreferenceScreen>

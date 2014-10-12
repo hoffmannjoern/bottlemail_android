@@ -32,7 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
         <activity
             android:name="uni.leipzig.bm2.activities.BottleDetails"
             android:label="@string/title_activity_bottle_details"
@@ -41,15 +40,22 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="uni.leipzig.bm2.activities.MainActivity" />
         </activity>
-        
+
         <service
             android:name="uni.leipzig.bm2.ble.BluetoothLeService"
             android:enabled="true" />
 
         <activity
             android:name="uni.leipzig.bm2.activities.MessageActivity"
-            android:label="@string/title_activity_message" 
+            android:label="@string/title_activity_message"
             android:parentActivityName="uni.leipzig.bm2.activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="uni.leipzig.bm2.activities.MainActivity" />
+        </activity>
+        <activity
+            android:name="uni.leipzig.bm2.activities.SettingsActivity"
+            android:label="@string/title_activity_settings" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="uni.leipzig.bm2.activities.MainActivity" />

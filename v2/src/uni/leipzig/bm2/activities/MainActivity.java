@@ -1,8 +1,5 @@
 package uni.leipzig.bm2.activities;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import uni.leipzig.bm2.adapter.ScannedBottlesListAdapter;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
@@ -17,6 +14,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -24,7 +22,9 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceFragment;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,12 +34,13 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends ListActivity implements OnPreferenceChangeListener {
 	
 	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
     
     private static MenuItem scanItem = null;
+    private SharedPreferences mSPreferences;
 
     // Memory-Handling
     //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory
@@ -60,6 +61,7 @@ public class MainActivity extends ListActivity {
     // Location-Handling
     private static LocationManager mLocationManager;
     private static LocationListener mLocationListener;
+    private static int localPrecision;
     private static final long SCAN_PERIOD_LOC = 30000;
     private static final long SCAN_RANGE_LOC = 50;
     
@@ -74,14 +76,14 @@ public class MainActivity extends ListActivity {
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setProgressBarIndeterminate(true);
-        
+		mSPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+      
 		getActionBar().setTitle(R.string.app_name);
-
+	
         mHandler = new Handler();
         // Initializes list view adapter.
         mScannedBottlesListAdapter = new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
         setListAdapter(mScannedBottlesListAdapter);
-//		setContentView(R.layout.activity_main);
         
         // different behaviour since API 18 
  		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -93,14 +95,17 @@ public class MainActivity extends ListActivity {
 
 		// Aquire a reference to the system Location Manager
 		initializeLocationManagerandListener();
-
+		localPrecision = Integer.valueOf(mSPreferences.getString("precision_preference", 
+				getResources().getString(R.string.invisible)));
+		if(DEBUG) Log.i("Default precision", "+++ "+ localPrecision +" +++");
+	
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		if(DEBUG) Log.e(TAG, "+++ onResume +++");
-		
+
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
@@ -205,10 +210,21 @@ public class MainActivity extends ListActivity {
             	mScannedBottlesListAdapter.addTestBottleToScannedList("ca:fe:ca:fe:ca:fe");
        			mScannedBottlesListAdapter.notifyDataSetChanged();
             	break;
+            case R.id.menu_settings:
+            	startActivity(new Intent(this, SettingsActivity.class));
+            	break;
         }
         return true;
     }
 
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if(DEBUG) Log.e(TAG, "+++ onPreferenceChange +++");
+		// TODO Auto-generated method stub
+		// Does actual nothing, because the app gets the precision, when setting geolocation
+		return true;
+	}
+    
 	private void initializeLocationManagerandListener() {
 		if(DEBUG) Log.e(TAG, "+++ initializeLocationManagerandListener +++");
 		
@@ -346,38 +362,29 @@ public class MainActivity extends ListActivity {
         bottle.setColor(getResources().getColor(R.color.green));
 		mScannedBottlesListAdapter.notifyDataSetChanged();
         
-        // Set location to Bottleobject
+        // Set location to Bottle-object
         // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
         // maybe decide for only one provider
-		// TODO: precision problem at example "Sternburg Brauerei Leipzig"
-		// 51.330308,12.400882 -> 6 after point -> extremely concrete
-		// 51.3303,12.4008 -> right street "Mühlstraße"
-		// 51.330,12.400 -> nothing happens
-		// 51.33,12.40 -> near right street "Mühlstraße"
-		// 51.3,12.4 -> city ("Leipzig/Lössnig")
-		// 51.0,12.0 -> region (in corner between "Zeitz, Gera, Eisenberg")
-		// 50.0,10.0 -> right country -> "Würzburg/FFM"
-		// useful options for precision settings should be:
-		// country (10.0 precise), region (11.0 precise), city (11.1 pr.), street(11.11 pr.), exactly (11.111111 pr.)
-        if (mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!=null) {
-        	bottle.setGeoLocation(mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
+        if (mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!=null) {
+        	if(DEBUG) Log.e(TAG, "GPS Provider knows the actual location!");
+        	setGeoLocationWithActualPrecision(bottle, true);
+        } else if (mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!=null) {
+        	if(DEBUG) Log.e(TAG, "GPS Provider knows nothing, but NETWORK Provider is very smart!");
+        	setGeoLocationWithActualPrecision(bottle, false);
         } else { 
-        	Log.e(TAG, "Network Provider knows nothing!");
+        	if(DEBUG) Log.e(TAG, "GPS and Network Provider knows nothing!");
         }
-//        if (mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!=null)
-//        	bottle.setGeoLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-//        else 
-//        	Log.e(TAG, "GPS Provider knows nothing!");
         
         // add bottle to bottlerack, if it is not there 
         if( (mBottleRack.addBottleToRack(bottle)) == true) {
         	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
         	
     		// Set found timestamp to NOW -> the moment of clicking first
-        	bottle.setFoundDate(DataTransformer.getUnixTimestampWithCurrentTime());//Calendar.getInstance().getTime().toString());
+        	bottle.setFoundDate(DataTransformer.getUnixTimestampWithCurrentTime());
     		if(DEBUG) Log.d(TAG, bottle.getFoundDate());
     		
-    		//TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
+    		//TODO: set text color to "bottle_known", if bottle is clicked, 
+    		// because was connected minimal one time
             // - actual the getView 
             bottle.setColor(getResources().getColor(R.color.green));
     		
@@ -395,12 +402,36 @@ public class MainActivity extends ListActivity {
         startActivity(intent);
     }
     
-//    public static class MainSettingsFragment extends PreferenceFragment {
-//    	@Override
-//    	public void onCreate(Bundle savedInstanceState) {
-//    		super.onCreate(savedInstanceState);
-//    		addPreferencesFromResource(R.xml.preferences);
-//    	}
-//    }
+    private void setGeoLocationWithActualPrecision (Bottle bottle, boolean gps) {
+		if(DEBUG) Log.e(TAG, "+++ setGeoLocationWithActualPrecision +++");
+		
+		// DONE: precision problem at example "Sternburg Brauerei Leipzig"
+		// 51.330308,12.400882 -> 6 after point -> extremely exact
+		// 51.33,12.40 -> near right street "Mühlstraße"
+		// 51.3,12.4 -> city ("Leipzig/Lössnig")
+		// 51.0,12.0 -> region (in corner between "Zeitz, Gera, Eisenberg")
+		// 50.0,10.0 -> right country -> "Germany - Würzburg/FFM"
+		// useful options for precision settings should be:
+		// country (10.0 precise), region (11.0 precise), city (11.1 pr.), street(11.11 pr.), exactly (11.111111 pr.)
+
+		// before passing actual location to bottle-object 
+		// get actual precision of shared preferences, because the user 
+		// could have put a new precision in settings
+		// if there is no useful setting, pass -1
+		localPrecision = Integer.valueOf(
+				mSPreferences.getString("precision_preference", 
+						getResources().getString(R.string.invisible) ));
+    	Log.e(TAG, "Set geo location with precision: " + localPrecision);
+    	
+    	if (gps == true) {
+    		bottle.setGeoLocation(
+	    			mLocationManager.getLastKnownLocation(
+	    					LocationManager.GPS_PROVIDER), localPrecision);
+    	} else {
+	    	bottle.setGeoLocation(
+	    			mLocationManager.getLastKnownLocation(
+	    					LocationManager.NETWORK_PROVIDER), localPrecision);
+    	}
+    }
 
 }
