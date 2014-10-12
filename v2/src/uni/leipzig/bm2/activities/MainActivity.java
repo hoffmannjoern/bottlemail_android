@@ -22,8 +22,6 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -34,7 +32,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class MainActivity extends ListActivity implements OnPreferenceChangeListener {
+public class MainActivity extends ListActivity {
 	
 	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
@@ -217,14 +215,6 @@ public class MainActivity extends ListActivity implements OnPreferenceChangeList
         return true;
     }
 
-	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		if(DEBUG) Log.e(TAG, "+++ onPreferenceChange +++");
-		// TODO Auto-generated method stub
-		// Does actual nothing, because the app gets the precision, when setting geolocation
-		return true;
-	}
-    
 	private void initializeLocationManagerandListener() {
 		if(DEBUG) Log.e(TAG, "+++ initializeLocationManagerandListener +++");
 		
