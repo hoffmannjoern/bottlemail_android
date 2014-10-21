@@ -1,6 +1,15 @@
 package uni.leipzig.bm2.activities;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import uni.leipzig.bm2.adapter.ScannedBottlesListAdapter;
+import uni.leipzig.bm2.config.AppUtilities;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
@@ -19,10 +28,13 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,7 +49,10 @@ public class MainActivity extends ListActivity {
 	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
     
+    // used to invert the visibility of scan icon always, when progress intermediate is toggled
     private static MenuItem scanItem = null;
+    
+    // permanent memory holder of app data like preferences
     private SharedPreferences mSPreferences;
 
     // Memory-Handling
@@ -45,10 +60,14 @@ public class MainActivity extends ListActivity {
     // - Tutorial for android security has an example for hashing with non-readable passphrase (or sth. like this)
     // - Watch for saving files / logging of bottles, for example in xml-file
     private static BottleRack mBottleRack = BottleRack.getInstance();
+
+    // Network-Service Handling
+    private static ConnectivityManager mConnManager;
+    private static final int REQUEST_ENABLE_NW = 10;
     
     // Bluetooth-Handling
 	private static BluetoothAdapter mBluetoothAdapter;
-    private static final int REQUEST_ENABLE_BT = 666;
+    private static final int REQUEST_ENABLE_BT = 11;
 	private static Handler mHandler;
 
 	private static ScannedBottlesListAdapter mScannedBottlesListAdapter;
@@ -77,12 +96,17 @@ public class MainActivity extends ListActivity {
 		mSPreferences = PreferenceManager.getDefaultSharedPreferences(this);
       
 		getActionBar().setTitle(R.string.app_name);
-	
+
         mHandler = new Handler();
         // Initializes list view adapter.
-        mScannedBottlesListAdapter = new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
+        mScannedBottlesListAdapter = 
+        		new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
         setListAdapter(mScannedBottlesListAdapter);
-        
+
+        // initialize connectivity manager for handling network
+		mConnManager = (ConnectivityManager) 
+				getSystemService(Context.CONNECTIVITY_SERVICE);
+		
         // different behaviour since API 18 
  		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
  			initializeBluetoothAdapterWithManager();
@@ -104,15 +128,13 @@ public class MainActivity extends ListActivity {
 		super.onResume();
 		if(DEBUG) Log.e(TAG, "+++ onResume +++");
 
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
-			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
-					Toast.LENGTH_SHORT).show();
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-
+		//TODO: test if any combination of not-availabilities of ble and network harm app performance
+		// Ensures network connection is enabled on the device.
+		initializeInternetConnection();
+		
+        // Ensures Bluetooth is enabled on the device. 
+		testBluetoothAvailability();
+		
         scanLeDevice(true);
 		
         //TODO: Decide: Do we want a GPS location, or fits a network only location
@@ -138,7 +160,11 @@ public class MainActivity extends ListActivity {
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
             finish();
             return;
+        } else if(requestCode == REQUEST_ENABLE_NW && resultCode == Activity.RESULT_CANCELED) {
+        	finish();
+        	return;
         }
+        
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -204,9 +230,14 @@ public class MainActivity extends ListActivity {
                 mLocationManager.removeUpdates(mLocationListener);
                 break;
             case R.id.menu_test:
-        		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottle+++");
+        		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottleForListOnly+++");
             	mScannedBottlesListAdapter.addTestBottleToScannedList("ca:fe:ca:fe:ca:fe");
        			mScannedBottlesListAdapter.notifyDataSetChanged();
+            	break;
+            case R.id.menu_createBottle:
+        		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottleForWebservice+++");
+        		//start an async task to send created test bottle to webservice
+            	new NewBottle().execute(AppUtilities.getInstance().getServerBottleUrl());
             	break;
             case R.id.menu_settings:
             	startActivity(new Intent(this, SettingsActivity.class));
@@ -249,6 +280,85 @@ public class MainActivity extends ListActivity {
 		};
 	}
 	
+	private class NewBottle extends AsyncTask<String, Void, String> {
+		// TODO get this class out of the MainAct
+
+		private static final boolean DEBUG = BottleMailConfig.HTTP_DEBUG;	
+	    private final String TAG = NewBottle.class.getSimpleName();
+	    
+		@Override
+		protected String doInBackground(String... params) {
+			// TODO implement that useful
+			try {
+				return sendBottle();
+			} catch (IOException e) {
+				return "Unable to retrieve web page. URL may be invalid.";
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+		}
+		
+		private String sendBottle () throws IOException {
+			
+			InputStream inputStream = null;
+			int length = 500;
+			
+			try {
+				URL url = new URL(AppUtilities.getInstance().getServerBottleUrl());
+				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+				// milliseconds
+				httpConn.setReadTimeout(10000); 
+				httpConn.setConnectTimeout(15000);
+				httpConn.setRequestMethod("POST");
+				httpConn.setDoInput(true);
+				// Starts the query
+				// TODO: Get the data of JSONParser, maybe as string or bottle or json himself
+				// format it and post it to webservice
+				httpConn.connect();
+				
+				// Display status code (200 is success)
+				int response = httpConn.getResponseCode();
+				Log.d(TAG, "The response is: " + response);
+				inputStream = httpConn.getInputStream();
+				
+				// Convert the InputStream into a string
+				String contentAsString = 
+						convertInputStreamToString(inputStream, length);
+				return contentAsString;
+				
+			// Make sure that the InputStream is closed after the app is finished using it.
+			} finally {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			}
+		}
+		
+		private String convertInputStreamToString(InputStream stream, int len) 
+				throws IOException, UnsupportedEncodingException {
+			Reader reader = null;
+			reader = new InputStreamReader(stream, "UTF-8");
+			char[] buffer = new char[len];
+			reader.read(buffer);
+			return new String(buffer);
+		}
+	}
+	
+	private void initializeInternetConnection () {
+		if(DEBUG) Log.e(TAG, "+++ initializeInternetConnection +++");
+
+		if(mConnManager.getActiveNetworkInfo() == null || 
+				!mConnManager.getActiveNetworkInfo().isConnected()) {
+			Toast.makeText(this, 
+					R.string.toast_ws_not_enabled, Toast.LENGTH_LONG).show();
+			Intent enableNetWork = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+			startActivity(enableNetWork);
+		}
+	}
+	
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 	private void initializeBluetoothAdapterWithManager () {
 		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapterWithManager +++");
@@ -277,6 +387,19 @@ public class MainActivity extends ListActivity {
 					Toast.LENGTH_LONG).show();
 			finish();	
 		} 
+	}
+	
+	private void testBluetoothAvailability () {
+		if(DEBUG) Log.e(TAG, "+++ testBluetoothAvailability +++");
+		
+		//If Bluetooth is not currently enabled,
+        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        if (!mBluetoothAdapter.isEnabled()) {
+			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
+					Toast.LENGTH_SHORT).show();
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
 	}
 
     private void scanLeDevice(final boolean enable) {

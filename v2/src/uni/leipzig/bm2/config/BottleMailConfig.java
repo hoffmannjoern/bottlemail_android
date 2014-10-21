@@ -13,6 +13,9 @@ public class BottleMailConfig {
 	
 	//Ble-Handling
 	public final static boolean BLE_DEBUG = DEBUG;
+
+	//HTTP-Handling
+	public final static boolean HTTP_DEBUG = DEBUG;
 	
 	//WS-Handling
 	public final static boolean WS_DEBUG = DEBUG;
