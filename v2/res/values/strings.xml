@@ -59,14 +59,7 @@
     
     <!-- SettingsActivity strings -->
     <string name="title_activity_settings">Einstellungen</string>
-<<<<<<< HEAD
-    	<!-- Precision preferences items -->
-    <string name="pref_prec_dialogtitle">Precision</string>
-    <string name="pref_prec_def">Exactly</string>   
-    <string name="pref_prec_summary">Select your precision of localization.</string>
-    <string name="pref_prec_title">Select your precision</string>
-=======
->>>>>>> 46b21e8ad200c9f5be2f318c3a935876212da03b
+
     	<!-- Username preferences items -->
     <string name="pref_user_dialogtitle">Username</string>
     <string name="pref_user_def">Sterni</string>
