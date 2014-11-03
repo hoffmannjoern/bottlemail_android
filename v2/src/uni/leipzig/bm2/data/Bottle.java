@@ -1,5 +1,7 @@
 package uni.leipzig.bm2.data;
 
+import java.util.Locale;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -166,12 +168,21 @@ public class Bottle implements Parcelable{
 	
 	public void setGeoLocation(Location geolocation, int precision) {
 		if (precision == -1) {
+			// invisible
 			// TODO: do not set a real position
 			// actually its 0,0, so its in atlantic ocean,
 			// do we want to set a default like Sternburg Brauerei?
 			this.latitude = 0;
 			this.longitude = 0;
+		} else if (precision == 6) {
+			// exactly
+			// set absolute precise location with 6 digits after point-notation
+			// that's the default precision of location object, so that state is just 
+			// faster than the last state, although it fits there, too.
+			this.latitude = geolocation.getLatitude();
+			this.longitude = geolocation.getLongitude();
 		} else if (precision == 10) {
+			// country
 			// set location so that there is only 10th precision (128.36 -> 120.0)
 			this.latitude = Double.valueOf(
 					(int) geolocation.getLatitude() 
@@ -179,24 +190,16 @@ public class Bottle implements Parcelable{
 			this.longitude = Double.valueOf(
 					(int) geolocation.getLongitude() 
 					- (((int) geolocation.getLongitude()) % 10));
-		} else if (precision == 6) {
-			// set absolute precise location with 6 digits after point-notation
-			// that's the default precision of location object, so that state is just 
-			// faster than the next, although it fits in there, too.
-			this.latitude = geolocation.getLatitude();
-			this.longitude = geolocation.getLongitude();
 		} else {
-			// that is an evil and very very sad hack to use users precision wish
-			// geolocation.getLatitude() but with with precision -> 
-			// 1. double to String with bind of precision value, 
-			// 2. replace german-like "," through readable "." notation
-			// 3. convert String back to double value
+			// region(111.000), city(111.100), street(111.110)
+			// 1. double to US-like digit String with bind of precision value, 
+			// 2. convert String back to double value
 			this.latitude = Double.valueOf(
-					String.format("%."+precision+"f", 
-							geolocation.getLatitude()).replace(",", ".")); 
+					String.format(Locale.US, "%."+precision+"f", 
+							geolocation.getLatitude())); 
 			this.longitude = Double.valueOf(
-					String.format("%."+precision+"f", 
-							geolocation.getLongitude()).replace(",", "."));
+					String.format(Locale.US, "%."+precision+"f", 
+							geolocation.getLongitude()));
 		}
 	}
 	

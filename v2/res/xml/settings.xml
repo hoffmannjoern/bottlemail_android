@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/pref_prec_title">
+    <PreferenceCategory android:title="@string/pref_user_title">
         <EditTextPreference 
             android:defaultValue="@string/pref_user_def"
             android:dialogTitle="@string/pref_user_dialogtitle"
@@ -9,7 +9,21 @@
             android:key="username_preference"
             android:summary="@string/pref_user_summary"
             android:persistent="true"/>
+    </PreferenceCategory>
         
+    <PreferenceCategory android:title="@string/pref_conn_title">
+        <ListPreference 
+            android:defaultValue="@string/pref_conn_def"
+            android:dialogTitle="@string/pref_conn_dialogtitle"
+            android:entries="@array/pref_conn_array"
+            android:entryValues="@array/pref_conn_array_values"
+            android:key="connection_preference"
+            android:summary="@string/pref_conn_summary"
+            android:title="@string/pref_conn_title"
+            android:persistent="true"/>
+    </PreferenceCategory>
+       
+    <PreferenceCategory android:title="@string/pref_prec_title"> 
         <ListPreference 
             android:defaultValue="@string/pref_prec_def"
             android:dialogTitle="@string/pref_prec_dialogtitle"

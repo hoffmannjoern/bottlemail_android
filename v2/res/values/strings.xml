@@ -14,6 +14,8 @@
     <string name="toast_ble_not_supported">BLE is not supported!</string>
     <string name="toast_bluetooth_not_enabled">Bluetooth is not enabled!</string>
     <string name="toast_scanning_ble">Scanning&#8230;</string>
+    <!-- Webservice messages -->
+    <string name="toast_ws_not_enabled">No network connection!</string>
 
     <!-- BottleDetails strings -->
     <string name="title_activity_bottle_details">BottleDetails</string>
@@ -57,16 +59,43 @@
     
     <!-- SettingsActivity strings -->
     <string name="title_activity_settings">Einstellungen</string>
+<<<<<<< HEAD
     	<!-- Precision preferences items -->
     <string name="pref_prec_dialogtitle">Precision</string>
     <string name="pref_prec_def">Exactly</string>   
     <string name="pref_prec_summary">Select your precision of localization.</string>
     <string name="pref_prec_title">Select your precision</string>
+=======
+>>>>>>> 46b21e8ad200c9f5be2f318c3a935876212da03b
     	<!-- Username preferences items -->
     <string name="pref_user_dialogtitle">Username</string>
     <string name="pref_user_def">Sterni</string>
     <string name="pref_user_title">Username</string>
     <string name="pref_user_summary">Please put in your username.</string>
+    	<!-- Connection preferences items -->
+    <string name="pref_conn_dialogtitle">Connection services</string>
+    <string name="pref_conn_def">both</string>
+    <string name="pref_conn_title">Connection services</string>
+    <string name="pref_conn_summary">Please select your preferred connection services.</string>
+
+    <string-array name="pref_conn_array">
+        <item>Both</item>
+        <item>Only Bluetooth LE</item>
+        <item>Only Internet</item>
+        <item>Nothing</item>
+    </string-array>
+    <string-array name="pref_conn_array_values">
+        <item>3</item> 
+        <item>2</item> 
+        <item>1</item> 
+        <item>0</item> 
+    </string-array>
+    
+    	<!-- Precision preferences items -->
+    <string name="pref_prec_dialogtitle">Precision</string>
+    <string name="pref_prec_def">Exactly</string>
+    <string name="pref_prec_summary">Select your precision of localization.</string>
+    <string name="pref_prec_title">Select your precision</string>
 
     <string-array name="pref_prec_array">
         <item>Exactly</item>

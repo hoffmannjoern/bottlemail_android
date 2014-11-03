@@ -50,7 +50,7 @@ public class SettingsActivity extends Activity implements OnPreferenceChangeList
 		return super.onOptionsItemSelected(item);
 	}
 
-    public static class MainSettingsFragment extends PreferenceFragment{ // implements OnSharedPreferenceChangeListener{
+    public static class MainSettingsFragment extends PreferenceFragment{
 
     	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
         private final static String TAG = MainSettingsFragment.class.getSimpleName();
@@ -73,11 +73,18 @@ public class SettingsActivity extends Activity implements OnPreferenceChangeList
 					return true;
 				}
 			};
-			
-			ListPreference listPref = (ListPreference) getPreferenceManager().findPreference("precision_preference");
-			listPref.setOnPreferenceChangeListener(onPreferenceChangeListener);
-			EditTextPreference editPref = (EditTextPreference) getPreferenceManager().findPreference("username_preference");
+
+			EditTextPreference editPref = (EditTextPreference) 
+					getPreferenceManager().findPreference("username_preference");
 			editPref.setOnPreferenceChangeListener(onPreferenceChangeListener);
+			
+			ListPreference listPref = (ListPreference) 
+					getPreferenceManager().findPreference("connection_preference");
+			listPref.setOnPreferenceChangeListener(onPreferenceChangeListener);
+			
+			listPref = (ListPreference) 
+					getPreferenceManager().findPreference("precision_preference");
+			listPref.setOnPreferenceChangeListener(onPreferenceChangeListener);			
     	}  
     }
 
