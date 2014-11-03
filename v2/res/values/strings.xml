@@ -59,7 +59,7 @@
     <string name="title_activity_settings">Einstellungen</string>
     	<!-- Precision preferences items -->
     <string name="pref_prec_dialogtitle">Precision</string>
-    <string name="pref_prec_def">Exactly</string>
+    <string name="pref_prec_def">Exactly</string>   
     <string name="pref_prec_summary">Select your precision of localization.</string>
     <string name="pref_prec_title">Select your precision</string>
     	<!-- Username preferences items -->

@@ -12,6 +12,14 @@ public class WebserviceHandler {
 	private static final boolean DEBUG = BottleMailConfig.WS_DEBUG;	
     private final static String TAG = WebserviceHandler.class.getSimpleName();
     
+    private String bmServerURL = null;
+    
+    private WebserviceHandler(){
+    	
+    	bmServerURL = "http://gurkware.bottlemail.de";
+    	
+    }
+    
     /**
      * Post created new bottle to webservice by using POST 
      * @param bottle new 
@@ -37,6 +45,9 @@ public class WebserviceHandler {
 	 */
 	public int postBottle(String bottleMac, int type, String name) {
         if(DEBUG) Log.e(TAG,"+++ postBottle(Mac, Type, Name) +++");
+        
+        
+        
         
 
         if(DEBUG) Log.e(TAG, "Failed to create bottle");

@@ -32,13 +32,14 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2) 
 public class MainActivity extends ListActivity {
 	
 	private static final boolean DEBUG = BottleMailConfig.ACTIVITY_DEBUG;	
     private final static String TAG = MainActivity.class.getSimpleName();
     
     private static MenuItem scanItem = null;
-    private SharedPreferences mSPreferences;
+    private SharedPreferences mSPreferences; //gespeicherte einstellungen
 
     // Memory-Handling
     //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory
