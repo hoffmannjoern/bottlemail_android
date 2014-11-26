@@ -61,8 +61,8 @@ public class BottleDetails extends Activity {
     private TextView mConnectionState;
     private TextView mDataField;
     private String mDeviceName;
-    private int mDeviceID;
     private String mDeviceAddress;
+    private int mDeviceID;
     private BluetoothLeService mBluetoothLeService;
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
@@ -81,7 +81,6 @@ public class BottleDetails extends Activity {
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			BluetoothGattCharacteristic characteristic;
 			Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
 		}
 	};
@@ -185,31 +184,9 @@ public class BottleDetails extends Activity {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) Log.e(TAG,"+++ OnCreate +++");
 		
-		setContentView(R.layout.activity_bottle_details);
+		getBottleInformationByIntent();
 
-		//Get Bottle of intent
-		Bundle extras = getIntent().getExtras();
-		mBottle = extras.getParcelable(MainActivity.SHOW_BOTTLE_DETAILS);
-
-		mDeviceName = mBottle.getBottleName();
-		mDeviceID = mBottle.getBottleID();
-		mDeviceAddress = mBottle.getMac();
-
-		// set actionbar titles
-		getActionBar().setTitle(mDeviceName);
-		getActionBar().setSubtitle(R.string.action_subtitle_compose);
-		
-		Toast.makeText(this, 
-				mDeviceName, Toast.LENGTH_SHORT).show();
-
-		if(mDeviceID >= 0 ) {
-			((TextView) findViewById(R.id.tv_bottle_id_value))
-			.setText(Integer.valueOf(mDeviceID).toString());
-		}
-		if(!mDeviceAddress.isEmpty()) {
-			((TextView) findViewById(R.id.tv_mac_value))
-			.setText(mDeviceAddress);
-		}
+		setupActivityGuiForBottleDetails();
 		
 		assureInternetConnection();
 
@@ -221,10 +198,35 @@ public class BottleDetails extends Activity {
 
 	        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
 	        isBound = bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-		}
-		
+		}	
+	}
+	
+	private void getBottleInformationByIntent() {
+		Bundle extras = getIntent().getExtras();
+		mBottle = extras.getParcelable(MainActivity.SHOW_BOTTLE_DETAILS);
+		mDeviceName = mBottle.getBottleName();
+		mDeviceAddress = mBottle.getMac();
+		mDeviceID = mBottle.getBottleID();
 	}
 
+	private void setupActivityGuiForBottleDetails() {
+		setContentView(R.layout.activity_bottle_details);
+		getActionBar().setTitle(mDeviceName);
+		getActionBar().setSubtitle(R.string.action_subtitle_compose);
+		
+		Toast.makeText(this, 
+				mDeviceName, Toast.LENGTH_SHORT).show();
+	
+		if(mDeviceID >= 0 ) {
+			((TextView) findViewById(R.id.tv_bottle_id_value))
+			.setText(Integer.valueOf(mDeviceID).toString());
+		}
+		if(!mDeviceAddress.isEmpty()) {
+			((TextView) findViewById(R.id.tv_mac_value))
+		.setText(mDeviceAddress);
+		}
+	}
+	
     @Override
     protected void onResume() {
         super.onResume();
