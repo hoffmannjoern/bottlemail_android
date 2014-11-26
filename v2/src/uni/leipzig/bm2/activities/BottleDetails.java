@@ -313,7 +313,7 @@ public class BottleDetails extends Activity {
     }
 
     private void displayData(String data) {
-        if(DEBUG) Log.e(TAG,"+++ displayData +++");
+        if(DEBUG) Log.e(TAG,"+++ displayData with \"" + data + "\" +++");
 		
         if (data != null) {
             mDataField.setText(data);

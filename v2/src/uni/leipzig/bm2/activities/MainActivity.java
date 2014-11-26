@@ -52,13 +52,9 @@ public class MainActivity extends ListActivity {
     
     // used to invert the visibility of scan icon always, when progress intermediate is toggled
     private static MenuItem scanItem = null;
-<<<<<<< HEAD
-    private SharedPreferences mSPreferences; //gespeicherte einstellungen
-=======
     
     // permanent memory holder of app data like preferences
     private SharedPreferences mSPreferences;
->>>>>>> 46b21e8ad200c9f5be2f318c3a935876212da03b
 
     // Memory-Handling
     //TODO: BottleRack is not saved on device... save to hashed or passphrased file (because of clarified geoloations) in memory

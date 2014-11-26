@@ -27,7 +27,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -439,7 +438,7 @@ public class BluetoothLeService extends Service {
     }
     
     public void writeDataToBottlEmailCharacteristic(String data) {
-		if(DEBUG) Log.e(TAG, "+++ testWriteDataToBottlEmailCharacteristic +++");
+		if(DEBUG) Log.e(TAG, "+++ testWriteDataToBottlEmailCharacteristic with \""+ data +"\" +++");
 		
     	BluetoothGattCharacteristic chara = 
     			mBluetoothGatt.getService(SERV_UUID_BM).

@@ -15,7 +15,7 @@ public class AppUtilities {
 		this.mServerBottleUrl = "bottlemail.gurkware.de/API/bottle/";
 		this.mServerMessageUrl = "bottlemail.gurkware.de/API/message/";
 		this.mAppVersion = 2.0;
-		this.mAppVersionName = "Bottager";//"Flaschenkind";
+		this.mAppVersionName = "Rainbow warrior";//"Flaschenkind";
 	}
 	
 	public static AppUtilities getInstance(){
