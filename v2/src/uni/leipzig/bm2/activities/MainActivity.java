@@ -1,19 +1,12 @@
 package uni.leipzig.bm2.activities;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import uni.leipzig.bm2.adapter.ScannedBottlesListAdapter;
 import uni.leipzig.bm2.config.AppUtilities;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
 import uni.leipzig.bm2.data.BottleRack;
 import uni.leipzig.bm2.data.DataTransformer;
+import uni.leipzig.bm2.webservice.CreateNewBottleAsync;
 import uni.leipzig.bottlemail2.R;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -29,7 +22,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -80,7 +72,6 @@ public class MainActivity extends ListActivity {
     // Location-Handling
     private static LocationManager mLocationManager;
     private static LocationListener mLocationListener;
-    private static int localPrecision;
     private static final long SCAN_PERIOD_LOC = 30000;
     private static final long SCAN_RANGE_LOC = 50;
     
@@ -109,9 +100,6 @@ public class MainActivity extends ListActivity {
 
 		// Aquire a reference to the system Location Manager
 		initializeLocationManagerAndListenerOnCreate();
-		localPrecision = getLocalPrecisionBySharedPrefsOnCreate();
-		if(DEBUG) Log.i("Default precision", "+++ "+ localPrecision +" +++");
-	
 	}
 
 	@Override
@@ -131,7 +119,9 @@ public class MainActivity extends ListActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 		if(DEBUG) Log.e(TAG, "+++ onActivityResult +++");
+		
         // User chose not to enable Bluetooth.
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
             finish();
@@ -140,8 +130,6 @@ public class MainActivity extends ListActivity {
         	finish();
         	return;
         }
-        
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -157,21 +145,25 @@ public class MainActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 		if(DEBUG) Log.e(TAG, "+++ onCreateOptionsMenu +++");
-		
         getMenuInflater().inflate(R.menu.main, menu);
+
         scanItem = menu.findItem(R.id.menu_scan);
-        menu.findItem(R.id.menu_stop).setVisible(true);
-        
-        if(DEBUG) {
-        	menu.findItem(R.id.menu_test).setVisible(true);
-        	menu.findItem(R.id.menu_createBottle).setVisible(true);
-        } else {
-        	menu.findItem(R.id.menu_test).setVisible(false);
-        	menu.findItem(R.id.menu_createBottle).setVisible(false);
-        }
+        updateVisibilityOfMenuItems(menu);
         return true;
     }
-
+    
+    private void updateVisibilityOfMenuItems(Menu menu) {
+	    menu.findItem(R.id.menu_stop).setVisible(true);
+	    
+	    if(DEBUG) {
+	    	menu.findItem(R.id.menu_test).setVisible(true);
+	    	menu.findItem(R.id.menu_createBottle).setVisible(true);
+	    } else {
+	    	menu.findItem(R.id.menu_test).setVisible(false);
+	    	menu.findItem(R.id.menu_createBottle).setVisible(false);
+	    }
+    }
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 		if(DEBUG) Log.e(TAG, "+++ onOptionsItemSelected +++");
@@ -183,14 +175,10 @@ public class MainActivity extends ListActivity {
                 scanLeDevice(true);
         		mLocationManager.requestLocationUpdates(
         				LocationManager.NETWORK_PROVIDER, 
-        				SCAN_PERIOD_LOC, 
-        				SCAN_RANGE_LOC, 
-        				mLocationListener);
+        				SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
                 break;
             case R.id.menu_stop:
                 scanLeDevice(false);
-                // TODO: stop or remove indeterminate_progress icon
-                //menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_indeterminate_progress);
                 mLocationManager.removeUpdates(mLocationListener);
                 break;
             case R.id.menu_test:
@@ -201,7 +189,8 @@ public class MainActivity extends ListActivity {
             case R.id.menu_createBottle:
         		if(DEBUG) Log.e(TAG, "+++ GenerateTestBottleForWebservice+++");
         		//start an async task to send created test bottle to webservice
-            	new NewBottle().execute(AppUtilities.getInstance().getServerBottleUrl());
+            	new CreateNewBottleAsync(getApplicationContext())
+            		.execute(AppUtilities.getInstance().getServerBottleUrl());
             	break;
             case R.id.menu_settings:
             	startActivity(new Intent(this, SettingsActivity.class));
@@ -227,11 +216,6 @@ public class MainActivity extends ListActivity {
         mScannedBottlesListAdapter = 
         	new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
         setListAdapter(mScannedBottlesListAdapter);
-	}
-	
-	private int getLocalPrecisionBySharedPrefsOnCreate() { 
-		return Integer.valueOf(mSPreferences.getString("precision_preference", 
-			getResources().getString(R.string.invisible)));
 	}
 	
 	private void initializeLocationManagerAndListenerOnCreate() {
@@ -277,79 +261,10 @@ public class MainActivity extends ListActivity {
 		// Register for Network-Provider Updates
 		mLocationManager.requestLocationUpdates(
 				LocationManager.NETWORK_PROVIDER, 
-				SCAN_PERIOD_LOC, 
-				SCAN_RANGE_LOC, 
-				mLocationListener);
+				SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
 		// Register for GPS-Provider Updates
 	//	mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
 	//			SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
-	}
-	
-	private class NewBottle extends AsyncTask<String, Void, String> {
-		// TODO get this class out of the MainAct
-
-		private static final boolean DEBUG = BottleMailConfig.HTTP_DEBUG;	
-	    private final String TAG = NewBottle.class.getSimpleName();
-	    
-		@Override
-		protected String doInBackground(String... params) {
-			// TODO implement that useful
-			try {
-				return sendBottle();
-			} catch (IOException e) {
-				return "Unable to retrieve web page. URL may be invalid.";
-			}
-		}
-		
-		@Override
-		protected void onPostExecute(String result) {
-			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-		}
-		
-		private String sendBottle () throws IOException {
-			
-			InputStream inputStream = null;
-			int length = 500;
-			
-			try {
-				URL url = new URL(AppUtilities.getInstance().getServerBottleUrl());
-				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
-				// milliseconds
-				httpConn.setReadTimeout(10000); 
-				httpConn.setConnectTimeout(15000);
-				httpConn.setRequestMethod("POST");
-				httpConn.setDoInput(true);
-				// Starts the query
-				// TODO: Get the data of JSONParser, maybe as string or bottle or json himself
-				// format it and post it to webservice
-				httpConn.connect();
-				
-				// Display status code (200 is success)
-				int response = httpConn.getResponseCode();
-				Log.d(TAG, "The response is: " + response);
-				inputStream = httpConn.getInputStream();
-				
-				// Convert the InputStream into a string
-				String contentAsString = 
-						convertInputStreamToString(inputStream, length);
-				return contentAsString;
-				
-			// Make sure that the InputStream is closed after the app is finished using it.
-			} finally {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-		}
-		
-		private String convertInputStreamToString(InputStream stream, int len) 
-				throws IOException, UnsupportedEncodingException {
-			Reader reader = null;
-			reader = new InputStreamReader(stream, "UTF-8");
-			char[] buffer = new char[len];
-			reader.read(buffer);
-			return new String(buffer);
-		}
 	}
 	
 	private void initializeInternetConnection () {
@@ -457,14 +372,6 @@ public class MainActivity extends ListActivity {
            			mScannedBottlesListAdapter.notifyDataSetChanged();
                }
             });
-
-//			List<AdRecord> records = AdRecord.parseScanRecord(scanRecord);
-//			if (records.size() == 0) {
-//			    Log.i(TAG, "Scan Record Empty");
-//			} else {
-//			    Log.i(TAG, "Scan Record: "
-//			            + TextUtils.join(",", records));
-//			}
        }
     };
 
@@ -475,57 +382,45 @@ public class MainActivity extends ListActivity {
 		mBluetoothAdapter.stopLeScan(mLeScanCallback);
         
 		final Bottle bottle = mScannedBottlesListAdapter.getBottle(position);
-		if (bottle == null) return;
+		if (bottle == null) 
+			return;
+		else 
+			updateBottleAndRack(bottle);
+        
+        showDetailsOfClickedBottle(bottle);
+    }
 
-		//TODO: set text color to "bottle_known", if bottle is clicked, because was connected minimal one time
-        // - actual the getView 
-        bottle.setColor(getResources().getColor(R.color.green));
-		mScannedBottlesListAdapter.notifyDataSetChanged();
-        
-        // Set location to Bottle-object
-        // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
-        // maybe decide for only one provider
-        if (mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!=null) {
-        	if(DEBUG) Log.e(TAG, "GPS Provider knows the actual location!");
-        	setGeoLocationWithActualPrecision(bottle, true);
-        } else if (mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)!=null) {
-        	if(DEBUG) Log.e(TAG, "GPS Provider knows nothing, but NETWORK Provider is very smart!");
-        	setGeoLocationWithActualPrecision(bottle, false);
-        } else { 
-        	if(DEBUG) Log.e(TAG, "GPS and Network Provider knows nothing!");
-        }
-        
-        // add bottle to bottlerack, if it is not there 
-        if( (mBottleRack.addBottleToRack(bottle)) == true) {
-        	if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
-        	
-    		// Set found timestamp to NOW -> the moment of clicking first
-        	bottle.setFoundDate(DataTransformer.getUnixTimestampWithCurrentTime());
-    		if(DEBUG) Log.d(TAG, bottle.getFoundDate());
-    		
-    		//TODO: set text color to "bottle_known", if bottle is clicked, 
-    		// because was connected minimal one time
-            // - actual the getView 
-            bottle.setColor(getResources().getColor(R.color.green));
-    		
-            mScannedBottlesListAdapter.notifyDataSetChanged();
-        } else {
-        	if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
-        }        
-        
-		// aus string zweite zeile in Integer wandeln           	
+    private void showDetailsOfClickedBottle(Bottle bottle) {
 		Intent intent = new Intent(this, BottleDetails.class);
 		Bundle bundle = new Bundle();
 		bundle.putParcelable(SHOW_BOTTLE_DETAILS, bottle);
 		intent.putExtras(bundle);
-
-        startActivity(intent);
+	
+	    startActivity(intent);
     }
-    
-    private void setGeoLocationWithActualPrecision (Bottle bottle, boolean gps) {
+
+	private void updateBottleAndRack(Bottle bottle) {
+		setGeoLocationWithActualPrecision(bottle);
+		
+		if( (mBottleRack.addBottleToRack(bottle)) == true) {
+			if(DEBUG) Log.d("Bottle added to \"Bottle Rack\"", bottle.getMac());
+			
+			// Set found timestamp to NOW -> the moment of clicking first
+			bottle.setFoundDate(DataTransformer.getUnixTimestampWithCurrentTime());
+			if(DEBUG) Log.d(TAG, bottle.getFoundDate());
+			
+		    bottle.setColor(getResources().getColor(R.color.green));
+			
+		    mScannedBottlesListAdapter.notifyDataSetChanged();
+		} else {
+			if(DEBUG) Log.d("Bottle already in \"Bottle Rack\"", bottle.getMac());
+		}    
+	}
+
+    private void setGeoLocationWithActualPrecision (Bottle bottle) {
 		if(DEBUG) Log.e(TAG, "+++ setGeoLocationWithActualPrecision +++");
 		
-		// DONE: precision problem at example "Sternburg Brauerei Leipzig"
+		// DONE: precision problem on example "Sternburg Brauerei Leipzig"
 		// 51.330308,12.400882 -> 6 after point -> extremely exact
 		// 51.33,12.40 -> near right street "Mühlstraße"
 		// 51.3,12.4 -> city ("Leipzig/Lössnig")
@@ -533,25 +428,29 @@ public class MainActivity extends ListActivity {
 		// 50.0,10.0 -> right country -> "Germany - Würzburg/FFM"
 		// useful options for precision settings should be:
 		// country (10.0 precise), region (11.0 precise), city (11.1 pr.), street(11.11 pr.), exactly (11.111111 pr.)
+		int geoPrecision = getGeoPrecisionBySharedPrefs();
+    	Log.e(TAG, "Set geo location with precision: " + geoPrecision);
 
-		// before passing actual location to bottle-object 
-		// get actual precision of shared preferences, because the user 
-		// could have put a new precision in settings
-		// if there is no useful setting, pass -1
-		localPrecision = Integer.valueOf(
-				mSPreferences.getString("precision_preference", 
-						getResources().getString(R.string.invisible) ));
-    	Log.e(TAG, "Set geo location with precision: " + localPrecision);
-    	
-    	if (gps == true) {
-    		bottle.setGeoLocation(
-	    			mLocationManager.getLastKnownLocation(
-	    					LocationManager.GPS_PROVIDER), localPrecision);
-    	} else {
-	    	bottle.setGeoLocation(
-	    			mLocationManager.getLastKnownLocation(
-	    					LocationManager.NETWORK_PROVIDER), localPrecision);
-    	}
+        // Set location to Bottle-object
+        // TODO: To use both: find the best choice of both, here we need more brain, than it should take.. 
+        // maybe decide for only one provider
+		Location location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (location != null) {
+        	if(DEBUG) Log.e(TAG, "Set location from GPS");
+        	bottle.setGeoLocation(location, geoPrecision);
+        } else {
+        	location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);        
+        	if (location != null) {
+        		if(DEBUG) Log.e(TAG, "Set location from network");
+            	bottle.setGeoLocation(location, geoPrecision);
+        	} else { 
+        		if(DEBUG) Log.e(TAG, "Unknown location");
+        	}
+        }
     }
 
+	private int getGeoPrecisionBySharedPrefs() { 
+		return Integer.valueOf(mSPreferences.getString("precision_preference", 
+			getResources().getString(R.string.invisible)));
+	}
 }
