@@ -33,6 +33,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -92,34 +93,23 @@ public class MainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) Log.e(TAG, "+++ onCreate +++");
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        setProgressBarIndeterminate(true);
 		mSPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-      
-		getActionBar().setTitle(R.string.app_name);
-
         mHandler = new Handler();
-        // Initializes list view adapter.
-        mScannedBottlesListAdapter = 
-        		new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
-        setListAdapter(mScannedBottlesListAdapter);
 
         // initialize connectivity manager for handling network
 		mConnManager = (ConnectivityManager) 
 				getSystemService(Context.CONNECTIVITY_SERVICE);
 		
-        // different behaviour since API 18 
- 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
- 			initializeBluetoothAdapterWithManager();
- 		else
- 	        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
- 				
- 		testBluetoothSupportOfDevice();
+		setupActivityGuiOnCreate();
+        
+		initializeListAdapterWithScannedBottlesOnCreate();
+        
+ 		initializeBluetoothAdapterOnCreate();
+ 		testBluetoothSupportOfDeviceOnCreate();
 
 		// Aquire a reference to the system Location Manager
-		initializeLocationManagerandListener();
-		localPrecision = Integer.valueOf(mSPreferences.getString("precision_preference", 
-				getResources().getString(R.string.invisible)));
+		initializeLocationManagerAndListenerOnCreate();
+		localPrecision = getLocalPrecisionBySharedPrefsOnCreate();
 		if(DEBUG) Log.i("Default precision", "+++ "+ localPrecision +" +++");
 	
 	}
@@ -133,25 +123,10 @@ public class MainActivity extends ListActivity {
 		// Ensures network connection is enabled on the device.
 		initializeInternetConnection();
 		
-        // Ensures Bluetooth is enabled on the device. 
-		testBluetoothAvailability();
-		
+		ensureBluetoothIsEnabledOnResume();
         scanLeDevice(true);
 		
-        //TODO: Decide: Do we want a GPS location, or fits a network only location
-		// What do we expect?
-		// To register for both just request location update types both (see location strategies tutorial)
-		// For both we need the ACCESS_FINE_LOCATION permission, for network we only need ACCESS_COARSE_LOCATION
-		// Register the listener with the Location Manager to receive location updates
-		// Register for Network-Provider Updates
-		mLocationManager.requestLocationUpdates(
-				LocationManager.NETWORK_PROVIDER, 
-				SCAN_PERIOD_LOC, 
-				SCAN_RANGE_LOC, 
-				mLocationListener);
-		// Register for GPS-Provider Updates
-//		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
-//				SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
+        requestLocationUpdatesOnResume();
 	}
 
     @Override
@@ -169,12 +144,6 @@ public class MainActivity extends ListActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-/*	@Override
-	protected void onStart(){
-		super.onStart();
-		if(DEBUG) Log.e(TAG, "+++ onStart +++");
-	}*/
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -184,12 +153,6 @@ public class MainActivity extends ListActivity {
         mScannedBottlesListAdapter.clear();
         mLocationManager.removeUpdates(mLocationListener);
     }
-
-/*	@Override
-	protected void onStop(){
-		super.onStop();
-		if(DEBUG) Log.e(TAG, "+++ onStop +++");
-	}*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -247,8 +210,32 @@ public class MainActivity extends ListActivity {
         return true;
     }
 
-	private void initializeLocationManagerandListener() {
-		if(DEBUG) Log.e(TAG, "+++ initializeLocationManagerandListener +++");
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if(DEBUG) Log.e(TAG, "+++ onPreferenceChange +++");
+		// TODO Auto-generated method stub
+		// Does actual nothing, because the app gets the precision, when setting geolocation
+		return true;
+	}
+
+	private void setupActivityGuiOnCreate() {
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setProgressBarIndeterminate(true);
+		getActionBar().setTitle(R.string.app_name);
+	}
+	
+	private void initializeListAdapterWithScannedBottlesOnCreate() {
+        mScannedBottlesListAdapter = 
+        	new ScannedBottlesListAdapter(this, getResources(), mBottleRack);
+        setListAdapter(mScannedBottlesListAdapter);
+	}
+	
+	private int getLocalPrecisionBySharedPrefsOnCreate() { 
+		return Integer.valueOf(mSPreferences.getString("precision_preference", 
+			getResources().getString(R.string.invisible)));
+	}
+	
+	private void initializeLocationManagerAndListenerOnCreate() {
+		if(DEBUG) Log.e(TAG, "+++ initializeLocationManagerandListenerOnCreate +++");
 		
 		// TODO: Defining model for best performance (see tutorial)
 		mLocationManager = (LocationManager) 
@@ -279,6 +266,23 @@ public class MainActivity extends ListActivity {
 				// TODO Auto-generated method stub
 			}
 		};
+	}
+
+	private void requestLocationUpdatesOnResume() {
+	    //TODO: Decide: Do we want a GPS location, or fits a network only location
+		// What do we expect?
+		// To register for both just request location update types both (see location strategies tutorial)
+		// For both we need the ACCESS_FINE_LOCATION permission, for network we only need ACCESS_COARSE_LOCATION
+		// Register the listener with the Location Manager to receive location updates
+		// Register for Network-Provider Updates
+		mLocationManager.requestLocationUpdates(
+				LocationManager.NETWORK_PROVIDER, 
+				SCAN_PERIOD_LOC, 
+				SCAN_RANGE_LOC, 
+				mLocationListener);
+		// Register for GPS-Provider Updates
+	//	mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+	//			SCAN_PERIOD_LOC, SCAN_RANGE_LOC, mLocationListener);
 	}
 	
 	private class NewBottle extends AsyncTask<String, Void, String> {
@@ -361,18 +365,22 @@ public class MainActivity extends ListActivity {
 	}
 	
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-	private void initializeBluetoothAdapterWithManager () {
-		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapterWithManager +++");
-		
-		// TODO: do it this way, when supporting at least API 18, do we?
-		final BluetoothManager bluetoothManager = 
-				(BluetoothManager) 
-				getSystemService(Context.BLUETOOTH_SERVICE);	
-		mBluetoothAdapter = bluetoothManager.getAdapter();
+	private void initializeBluetoothAdapterOnCreate() {
+		if(DEBUG) Log.e(TAG, "+++ initializeBluetoothAdapterOnCreate +++");
+
+        // different behaviour since API 18 
+ 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+ 			// TODO: do it this way, when supporting at least API 18, do we?
+ 			final BluetoothManager bluetoothManager = 
+ 					(BluetoothManager) 
+ 					getSystemService(Context.BLUETOOTH_SERVICE);	
+ 			mBluetoothAdapter = bluetoothManager.getAdapter();
+ 		} else
+ 	        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 	}
 	
-	private void testBluetoothSupportOfDevice () {
-		if(DEBUG) Log.e(TAG, "+++ testBluetoothSupportOfDevice +++");
+	private void testBluetoothSupportOfDeviceOnCreate() {
+		if(DEBUG) Log.e(TAG, "+++ testBluetoothSupportOfDeviceOnCreate +++");
 		
 		if(mBluetoothAdapter == null) {
 			// Device does not support bluetooth
@@ -390,19 +398,17 @@ public class MainActivity extends ListActivity {
 		} 
 	}
 	
-	private void testBluetoothAvailability () {
-		if(DEBUG) Log.e(TAG, "+++ testBluetoothAvailability +++");
-		
-		//If Bluetooth is not currently enabled,
+	private void ensureBluetoothIsEnabledOnResume() {
+        // If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
+	    if (!mBluetoothAdapter.isEnabled()) {
 			Toast.makeText(this, R.string.toast_bluetooth_not_enabled, 
 					Toast.LENGTH_SHORT).show();
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
+	        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+	        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+	    }
 	}
-
+	
     private void scanLeDevice(final boolean enable) {
 
 		if(DEBUG) Log.e(TAG, "+++ scanLeDevice +++");
@@ -427,7 +433,7 @@ public class MainActivity extends ListActivity {
             setLoadIconByHidingScanButtonIfTrue(false);
         }
     }
-    
+
     private void setLoadIconByHidingScanButtonIfTrue(boolean setLoad) {
     	if (scanItem != null)
     		scanItem.setVisible(!setLoad);
