@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- MainActivity strings -->
+    <string name="app_name">BottlEmail 2.0</string>
+    <string name="hello_world">Hallo Welt!</string>
+    <!-- tab names -->
+    <string name="title_section1">In der Nähe</string>
+    <string name="title_section2">Flaschenregal</string>
+    <string name="unknown_device">Unbekannt</string>
+    <!-- Bluetooth messages -->
+    <string name="toast_activeBluetooth">Bluetooth aktiviert (Dummy Text)</string>
+    <string name="toast_bluetooth_not_supported">Bluetooth wird nicht unterstützt!</string>
+    <string name="toast_ble_not_supported">BLE wird nicht unterstützt!</string>
+    <string name="toast_bluetooth_not_enabled">Bluetooth ist aktiviert!</string>
+    <string name="toast_scanning_ble">Scanne&#8230;</string>
+    <!-- Webservice messages -->
+    <string name="toast_ws_not_enabled">Keine Netzwerkverbindung!</string>
+
+    <!-- BottleDetails strings -->
+    <string name="title_activity_bottle_details">BottleDetails</string>
+    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
+    <string name="tv_bottleid">Bottle-ID:</string>
+    <string name="tv_mac">BT-Mac: </string>
+    <string name="tv_data">Daten: </string>
+    <string name="tv_delete_timestamp">Nachricht gelöscht</string>
+    <string name="btn_show_message">Nachrichten</string>
+    <string name="btn_send_message">Sende</string>
+    <string name="btn_show_map">Karte</string>
+    <string name="gatt_state">Status: </string>
+    <string name="connected">Verbunden</string>
+    <string name="disconnected">Getrennt</string>
+    <string name="no_data">Keine Daten</string>
+    <string name="unknown_characteristic">Unbekannte Charakteristik</string>
+    <string name="unknown_service">Unbekannter Service</string>
+    
+    <string name="toast_unable_to_write_external">Schreiben der Nachricht fehlgeschlagen.</string>
+    
+    	<!-- Alert Dialog -->
+    <string name="alert_title_no_internet_conn">Kein Internetzugang</string>
+    <string name="alert_body_no_internet_conn">Du bist nicht mit dem 
+        Internet verbunden. Möchtest du es jetzt aktivieren?</string>
+    <string name="alert_btn_okay">Okay</string>
+    <string name="alert_btn_accept">Akzeptieren</string>
+    <string name="alert_btn_close">Schließen</string>
+
+    <!-- MessageActivity strings -->
+    <string name="title_activity_message">Nachrichten-Ansicht</string>
+    <string name="subtitle_activity_message">Flaschennachrichten</string>
+    <string name="messages_timestamp">Gesendet am:</string>
+    <string name="messages_latitude">Latitude:</string>
+    <string name="messages_longitude">Longitude:</string>
+    <string name="toast_unable_to_get_more">Holen weiterer Nachrichten fehlgeschlagen.</string>
+
+    <!-- Menu items -->
+    <string name="menu_connect">Verbinden</string>
+    <string name="menu_disconnect">Trennen</string>
+    
+    <string name="menu_settings">Einstellungen</string>
+    <string name="menu_scan">Scannen</string>
+    <string name="menu_stop">Stoppen</string>
+    <string name="menu_test">Test</string>
+    <string name="menu_create">Flasche basteln</string>
+    
+    <string name="menu_get">Hole mehr!</string>
+    
+    <!-- SettingsActivity strings -->
+    <string name="title_activity_settings">Einstellungen</string>
+
+    	<!-- Username preferences items -->
+    <string name="pref_user_dialogtitle">Nutzername</string>
+    <string name="pref_user_def">Sterni</string>
+    <string name="pref_user_title">Nutzername</string>
+    <string name="pref_user_summary">Bitte gib deinen Nutzernamen ein.</string>
+    	<!-- Connection preferences items -->
+    <string name="pref_conn_dialogtitle">Genutzte Verbindungsdienste</string>
+    <string name="pref_conn_def">Beide</string>
+    <string name="pref_conn_title">Verbindungsdienste</string>
+    <string name="pref_conn_summary">Bitte wähle den gewünschten Dienst.</string>
+
+    <string-array name="pref_conn_array">
+        <item>Beide</item>
+        <item>Nur Bluetooth LE</item>
+        <item>Nur Internet</item>
+        <item>Nichts</item>
+    </string-array>
+    <string-array name="pref_conn_array_values">
+        <item>3</item> 
+        <item>2</item> 
+        <item>1</item> 
+        <item>0</item> 
+    </string-array>
+    
+    	<!-- Precision preferences items -->
+    <string name="pref_prec_dialogtitle">GPS-Präzision</string>
+    <string name="pref_prec_def">Exakt</string>
+    <string name="pref_prec_summary">Wähle deine GPS Genauigkeit, um festzulegen, wie genau deine Position nachvollziehbar ist.</string>
+    <string name="pref_prec_title">Wähle die GPS-Präzision</string>
+
+    <string-array name="pref_prec_array">
+        <item>Exakt</item>
+        <item>Genaue Straße</item>
+        <item>Stadt</item>
+        <item>Region</item>
+        <item>Land/Staat</item>
+        <item>Unsichtbar</item>
+    </string-array>
+    <string-array name="pref_prec_array_values">
+        <item>6</item> <!-- n -->
+        <item>2</item> <!-- digits -->
+        <item>1</item> <!-- after -->
+        <item>0</item> <!-- notation -->
+        <item>10</item>	<!-- just a marker because here we use a modulo 10 computation -->
+        <item>@string/invisible</item> <!-- invisible symbol = -1 -->
+    </string-array>
+    <string name="invisible">-1</string>
+
+</resources>

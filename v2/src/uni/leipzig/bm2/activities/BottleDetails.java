@@ -1,13 +1,17 @@
 package uni.leipzig.bm2.activities;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import uni.leipzig.bm2.ble.BluetoothLeService;
 import uni.leipzig.bm2.ble.SampleGattAttributes;
+import uni.leipzig.bm2.config.AppUtilities;
 import uni.leipzig.bm2.config.BottleMailConfig;
 import uni.leipzig.bm2.data.Bottle;
+import uni.leipzig.bm2.data.DataTransformer;
+import uni.leipzig.bm2.filemanager.FileManager;
 import uni.leipzig.bottlemail2.R;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -27,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -57,7 +63,7 @@ public class BottleDetails extends Activity {
 	
 	private static Bottle mBottle;
 
-    private ExpandableListView mMessagesList;
+    private ExpandableListView mMessagesList = null;
     private TextView mConnectionState;
     private TextView mDataField;
     private String mDeviceName;
@@ -70,6 +76,8 @@ public class BottleDetails extends Activity {
     private boolean isBound = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
 
+    private SharedPreferences mSPreferences;
+    
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
@@ -144,45 +152,47 @@ public class BottleDetails extends Activity {
     // http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
     // list of supported characteristic features.
     private final ExpandableListView.OnChildClickListener servicesListClickListner =
-            new ExpandableListView.OnChildClickListener() {
-                @Override
-                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
-                                            int childPosition, long id) {
-                    if(DEBUG) Log.e(TAG,"+++ ExpandableListView.onChildClick +++");
-            		
-                    if (mGattCharacteristics != null) {
-                        final BluetoothGattCharacteristic characteristic =
-                                mGattCharacteristics.get(groupPosition).get(childPosition);
-                        Log.d(TAG, characteristic.getService() 
-                        		+" | "+ characteristic.getProperties() 
-                                +" | "+ characteristic.getUuid() 
-                                +" | "+ characteristic.getWriteType());
-                        final int charaProp = characteristic.getProperties();
-                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                            // If there is an active notification on a characteristic, clear
-                            // it first so it doesn't update the data field on the user interface.
-                            if (mNotifyCharacteristic != null) {
-                                mBluetoothLeService.setCharacteristicNotification(
-                                        mNotifyCharacteristic, false);
-                                mNotifyCharacteristic = null;
-                            }
-                            mBluetoothLeService.readCharacteristic(characteristic);
-                        }
-                        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                            mNotifyCharacteristic = characteristic;
+        new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
+                                        int childPosition, long id) {
+                if(DEBUG) Log.e(TAG,"+++ ExpandableListView.onChildClick +++");
+        		
+                if (mGattCharacteristics != null) {
+                    final BluetoothGattCharacteristic characteristic =
+                            mGattCharacteristics.get(groupPosition).get(childPosition);
+                    Log.d(TAG, characteristic.getService() 
+                    		+" | "+ characteristic.getProperties() 
+                            +" | "+ characteristic.getUuid() 
+                            +" | "+ characteristic.getWriteType());
+                    final int charaProp = characteristic.getProperties();
+                    if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                        // If there is an active notification on a characteristic, clear
+                        // it first so it doesn't update the data field on the user interface.
+                        if (mNotifyCharacteristic != null) {
                             mBluetoothLeService.setCharacteristicNotification(
-                                    characteristic, true);
+                                    mNotifyCharacteristic, false);
+                            mNotifyCharacteristic = null;
                         }
-                        return true;
+                        mBluetoothLeService.readCharacteristic(characteristic);
                     }
-                    return false;
+                    if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                        mNotifyCharacteristic = characteristic;
+                        mBluetoothLeService.setCharacteristicNotification(
+                                characteristic, true);
+                    }
+                    return true;
                 }
+                return false;
+            }
     };  
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if(DEBUG) Log.e(TAG,"+++ OnCreate +++");
+
+		mSPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		
 		getBottleInformationByIntent();
 
@@ -191,9 +201,11 @@ public class BottleDetails extends Activity {
 		assureInternetConnection();
 
 		if( !mDeviceAddress.equals("ca:fe:ca:fe:ca:fe") ) {
-			mMessagesList = (ExpandableListView) findViewById(R.id.list_messages);
-			mMessagesList.setOnChildClickListener(servicesListClickListner);
-	        mConnectionState = (TextView) findViewById(R.id.conn_state);
+			if(DEBUG){
+				mMessagesList = (ExpandableListView) findViewById(R.id.list_messages);
+				mMessagesList.setOnChildClickListener(servicesListClickListner);
+			}
+			mConnectionState = (TextView) findViewById(R.id.conn_state);
 	        mDataField = (TextView) findViewById(R.id.data_value);
 
 	        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
@@ -216,14 +228,14 @@ public class BottleDetails extends Activity {
 		
 		Toast.makeText(this, 
 				mDeviceName, Toast.LENGTH_SHORT).show();
-	
+		
 		if(mDeviceID >= 0 ) {
 			((TextView) findViewById(R.id.tv_bottle_id_value))
-			.setText(Integer.valueOf(mDeviceID).toString());
+				.setText(Integer.valueOf(mDeviceID).toString());
 		}
 		if(!mDeviceAddress.isEmpty()) {
 			((TextView) findViewById(R.id.tv_mac_value))
-		.setText(mDeviceAddress);
+				.setText(mDeviceAddress);
 		}
 	}
 	
@@ -299,7 +311,9 @@ public class BottleDetails extends Activity {
     private void clearUI() {
         if(DEBUG) Log.e(TAG,"+++ clearUI +++");
 		
-    	mMessagesList.setAdapter((SimpleExpandableListAdapter) null);
+        if(mMessagesList != null) {
+        	mMessagesList.setAdapter((SimpleExpandableListAdapter) null);
+        }
         mDataField.setText(R.string.no_data);
     }
 
@@ -378,7 +392,8 @@ public class BottleDetails extends Activity {
                 new String[] {LIST_NAME, LIST_UUID},
                 new int[] { android.R.id.text1, android.R.id.text2 }
         );
-        mMessagesList.setAdapter(gattServiceAdapter);
+        if(mMessagesList != null)
+        	mMessagesList.setAdapter(gattServiceAdapter);
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -422,13 +437,35 @@ public class BottleDetails extends Activity {
         if(DEBUG) Log.e(TAG,"+++ sendMessage +++");
 		
         mHandler.sendMessage(Message.obtain(null, 201, mDeviceAddress));
-
+    	EditText edittext = (EditText) findViewById(R.id.et_message);
+    	
         if(mBluetoothLeService != null) {
-        	EditText edittext = (EditText) findViewById(R.id.et_message);
 //        	mBluetoothLeService.testWriteDataToAllCharacteristics();
         	mBluetoothLeService.writeDataToBottlEmailCharacteristic(
         			edittext.getText().toString());
         }
+        
+        //FIXME: Evil hack -> writing messages to persistent file on device with a filemanager
+        //TODO: Put contents of sent messages to message object
+        try {
+			FileManager mFileManager = new FileManager(
+					AppUtilities.getInstance().getPathToExtStorageDir(), 
+					mDeviceAddress + ".txt");
+			String username = mSPreferences.getString("username_preference", 
+					getResources().getString(R.string.pref_user_def));
+			mFileManager.appendLine(edittext.getText().toString() 
+					+ "|" + username
+					+ "|" + getResources().getString(R.string.messages_timestamp) 
+					+ "|" + DataTransformer.getUnixTimestampWithCurrentTime()
+					+ "|" + getResources().getString(R.string.messages_latitude) 
+					+ "|" + mBottle.getLatitude() 
+					+ "|" + getResources().getString(R.string.messages_longitude) 
+					+ "|" + mBottle.getLongitude());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Toast.makeText(this, R.string.toast_unable_to_write_external, Toast.LENGTH_LONG).show();
+		}
         //TODO
 		//connect to bluetooth device
 		//send message

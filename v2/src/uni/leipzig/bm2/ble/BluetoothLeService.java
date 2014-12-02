@@ -35,6 +35,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Base64;
 import android.util.Log;
 
 
@@ -233,7 +234,8 @@ public class BluetoothLeService extends Service {
 //            intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
         } else {
             // For all other profiles, writes the data formatted in HEX.
-            final byte[] data = characteristic.getValue();
+            final byte[] encodedData = characteristic.getValue();
+            final byte[] data = Base64.decode(encodedData, 0);
             if (data != null && data.length > 0) {
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
                 for(byte byteChar : data)
@@ -444,7 +446,7 @@ public class BluetoothLeService extends Service {
     			mBluetoothGatt.getService(SERV_UUID_BM).
     			getCharacteristic(CHAR_UUID_BOTTLEMAIL);
     	mBluetoothGatt.setCharacteristicNotification(chara, true);
-    	chara.setValue(data.getBytes());
+    	chara.setValue(Base64.encode(data.getBytes(), 0));
     	mBluetoothGatt.writeCharacteristic(chara);
     }
     

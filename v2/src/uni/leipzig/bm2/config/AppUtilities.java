@@ -1,5 +1,7 @@
 package uni.leipzig.bm2.config;
 
+import android.os.Environment;
+
 public class AppUtilities {
 	
 	private static AppUtilities appUtils = new AppUtilities();
@@ -8,6 +10,7 @@ public class AppUtilities {
 	private String mServerMessageUrl;
 	private double mAppVersion;
 	private String mAppVersionName;
+	private String pathToExtStorageDir;
 	
 	private AppUtilities(){
 		
@@ -16,6 +19,9 @@ public class AppUtilities {
 		this.mServerMessageUrl = "bottlemail.gurkware.de/API/message/";
 		this.mAppVersion = 2.0;
 		this.mAppVersionName = "Rainbow warrior";//"Flaschenkind";
+		//FIXME: only for external storage usage when using persistent memory for messages
+		this.pathToExtStorageDir = 
+				Environment.getExternalStorageDirectory().toString() + "/bm_content";
 	}
 	
 	public static AppUtilities getInstance(){
@@ -40,5 +46,9 @@ public class AppUtilities {
 
 	public String getAppVersionName () {
 		return this.mAppVersionName;
+	}
+	
+	public String getPathToExtStorageDir() {
+		return this.pathToExtStorageDir;
 	}
 }

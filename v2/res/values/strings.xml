@@ -5,11 +5,11 @@
     <string name="app_name">BottlEmail 2.0</string>
     <string name="hello_world">Hello world!</string>
     <!-- tab names -->
-    <string name="title_section1">In der Nähe</string>
-    <string name="title_section2">Flaschenregal</string>
-    <string name="unknown_device">Unbekannt</string>
+    <string name="title_section1">Near by</string>
+    <string name="title_section2">Bottle rack</string>
+    <string name="unknown_device">Unknown</string>
     <!-- Bluetooth messages -->
-    <string name="toast_activeBluetooth">Bluetooth aktiviert (Dummy Text)</string>
+    <string name="toast_activeBluetooth">Bluetooth activated (dummy text)</string>
     <string name="toast_bluetooth_not_supported">Bluetooth is not supported!</string>
     <string name="toast_ble_not_supported">BLE is not supported!</string>
     <string name="toast_bluetooth_not_enabled">Bluetooth is not enabled!</string>
@@ -19,46 +19,52 @@
 
     <!-- BottleDetails strings -->
     <string name="title_activity_bottle_details">BottleDetails</string>
-    <string name="action_subtitle_compose">Verfassen Sie Ihre Flaschenpost</string>
-    <string name="tv_bottleid">FlaschenID: </string>
-    <string name="tv_mac">FlaschenMac: </string>
-    <string name="tv_data">Daten: </string>
-    <string name="tv_delete_timestamp">Nachricht gelöscht</string>
-    <string name="btn_show_message">Nachrichten</string>
-    <string name="btn_send_message">Sende</string>
-    <string name="btn_show_map">Karte</string>
+    <string name="action_subtitle_compose">Write your messages here.</string>
+    <string name="tv_bottleid">Bottle-ID:</string>
+    <string name="tv_mac">BT-Mac: </string>
+    <string name="tv_data">Data: </string>
+    <string name="tv_delete_timestamp">Message deleted</string>
+    <string name="btn_show_message">Messages</string>
+    <string name="btn_send_message">Send</string>
+    <string name="btn_show_map">Map</string>
     <string name="gatt_state">State: </string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="no_data">No data</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
     <string name="unknown_service">Unknown service</string>
+    
+    <string name="toast_unable_to_write_external">Unable to write message.</string>
+    
     	<!-- Alert Dialog -->
-    <string name="alert_title_no_internet_conn">Kein Internetzugang</string>
-    <string name="alert_body_no_internet_conn">Du bist nicht mit dem 
-        Internet verbunden. Möchtest du es jetzt aktivieren?</string>
+    <string name="alert_title_no_internet_conn">No network connection</string>
+    <string name="alert_body_no_internet_conn">You are not connected to the internet. Do you want to activate it?</string>
     <string name="alert_btn_okay">Okay</string>
-    <string name="alert_btn_accept">Akzeptieren</string>
-    <string name="alert_btn_close">Schließen</string>
+    <string name="alert_btn_accept">Accept</string>
+    <string name="alert_btn_close">Close</string>
 
     <!-- MessageActivity strings -->
-    <string name="title_activity_message">Nachrichten-Ansicht</string>
-    <string name="subtitle_activity_message">Flaschennachrichten</string>
+    <string name="title_activity_message">Messages view</string>
+    <string name="subtitle_activity_message">Bottle messages</string>
+    <string name="messages_timestamp">Sent on:</string>
+    <string name="messages_latitude">Latitude:</string>
+    <string name="messages_longitude">Longitude:</string>
+    <string name="toast_unable_to_get_more">Unable to get more messages.</string>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
     
-    <string name="menu_settings">Einstellungen</string>
+    <string name="menu_settings">Preferences</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="menu_test">Test</string>
-    <string name="menu_create">Flasche basteln</string>
+    <string name="menu_create">Build bottle</string>
     
-    <string name="menu_get">Hole mehr!</string>
+    <string name="menu_get">Get more!</string>
     
     <!-- SettingsActivity strings -->
-    <string name="title_activity_settings">Einstellungen</string>
+    <string name="title_activity_settings">Preferences</string>
 
     	<!-- Username preferences items -->
     <string name="pref_user_dialogtitle">Username</string>
@@ -85,10 +91,10 @@
     </string-array>
     
     	<!-- Precision preferences items -->
-    <string name="pref_prec_dialogtitle">Precision</string>
+    <string name="pref_prec_dialogtitle">GPS precision</string>
     <string name="pref_prec_def">Exactly</string>
-    <string name="pref_prec_summary">Select your precision of localization.</string>
-    <string name="pref_prec_title">Select your precision</string>
+    <string name="pref_prec_summary">Select your GPS precision to declare how clearly your position will be seen on map.</string>
+    <string name="pref_prec_title">Select your GPS precision</string>
 
     <string-array name="pref_prec_array">
         <item>Exactly</item>
