@@ -65,7 +65,7 @@ public class MessageActivity extends Activity {
 
 		try {
 			mFileManager = new FileManager(AppUtilities.getInstance().getPathToExtStorageDir(), mBottleMac + ".txt");
-			messages = mFileManager.getFirstMessages(10);
+			messages = mFileManager.getNumberNewestMessages(10);
 			
 			mMessagesList = (ExpandableListView) findViewById(R.id.elv_message);
 			mMessagesList.setOnChildClickListener(messagesListClickListner);
@@ -108,10 +108,20 @@ public class MessageActivity extends Activity {
 	
     private void displayMessages(Vector<String> messages) {
         if(DEBUG) Log.e(TAG,"+++ displayMessages +++");
-		
+
+        if(DEBUG) {
+			try {
+				Log.e(TAG, "Number of messages: " + Integer.valueOf(mFileManager.getLinesCount()).toString());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        
         if (messages == null) return;
 
-        ArrayList<HashMap<String, String>> messagesList = new ArrayList<HashMap<String, String>>();
+        ArrayList<HashMap<String, String>> messagesList 
+        		= new ArrayList<HashMap<String, String>>();
         ArrayList<ArrayList<HashMap<String, String>>> messagesContent
         		= new ArrayList<ArrayList<HashMap<String, String>>>();
         
@@ -157,7 +167,7 @@ public class MessageActivity extends Activity {
 		// TODO: Communicate with WebService through Rest-Api
         //FIXME: Only for persistent external storage 
         try {
-			messages.addAll(mFileManager.getLinesFromTo(messages.size(), 10));
+			messages.addAll(mFileManager.getLastLinesFromTo(messages.size(), 10));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

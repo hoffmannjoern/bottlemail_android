@@ -99,11 +99,37 @@ public class FileManager {
 		return null;
 	}
 
-	public Vector<String> getFirstMessages(int number) throws IOException {
-		return getLinesFromTo(0, 10);
+	public Vector<String> getNumberNewestMessages(int number) throws IOException {
+		return getLastLinesFromTo(0, 10);
 	}
 	
-	public Vector<String> getLinesFromTo(int start, int number) throws IOException {
+	public Vector<String> getLastLinesFromTo(int start, int number) throws IOException {
+		Vector<String> lines = new Vector<String>();
+			
+		try{
+			BufferedReader in = new BufferedReader(new FileReader(file));
+			int lineCount = 0;
+			int numberOfLines = getLinesCount();
+			String line = null;
+			
+			while((line = in.readLine()) != null) {
+				if(++lineCount >= numberOfLines - start - number)
+					lines.add(line);
+					if(lineCount >= numberOfLines - start)
+						break;
+			}
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return lines;
+	}
+
+	public Vector<String> getNumberOldestMessages(int number) throws IOException {
+		return getFirstLinesFromTo(0, 10);
+	}
+	
+	public Vector<String> getFirstLinesFromTo(int start, int number) throws IOException {
 		Vector<String> lines = new Vector<String>();
 			
 		try{
